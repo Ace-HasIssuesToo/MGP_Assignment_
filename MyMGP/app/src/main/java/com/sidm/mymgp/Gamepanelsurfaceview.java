@@ -38,6 +38,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private int coinX = 0, coinY = 0;
     protected boolean moveship = false;
 
+    // var for one grid circle
+    private float cirX = 0, cirY = 0;
+    private Bitmap circle;
+
     // Variables for FPS
     public float FPS;
     float deltaTime;
@@ -65,6 +69,8 @@ private Spriteanimation flyingcoins;
         // 1e)load the image when this class is being instantiated
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.gamescene);
         scalebg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
+
+        circle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
 
         // 4c) Load the images of the spaceships
         ship[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_1), Screenwidth / 10, Screenheight / 10, true);
@@ -123,7 +129,7 @@ private Spriteanimation flyingcoins;
         canvas.drawBitmap(scalebg, bgX, bgY, null);
         canvas.drawBitmap(scalebg, bgX + Screenwidth, bgY, null);
 
-        // 4d) Draw the spaceships
+        // Draw spaceships
         canvas.drawBitmap(ship[shipIndex], mX, mY, null); // location of the ship is based on the touch
 
         //location of ship based on touch
@@ -136,6 +142,11 @@ private Spriteanimation flyingcoins;
 
         flyingcoins.setX(coinX);
         flyingcoins.setY(coinY);
+
+        // draw the grid
+        canvas.drawBitmap(circle, cirX, cirY, null); // location of the ship is based on the touch
+        cirX = Screenwidth / 10;
+        cirY = Screenheight * 0.5f;
     }
 
 
@@ -188,13 +199,17 @@ private Spriteanimation flyingcoins;
     boolean CheckCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
     {
         if (x2 >= x1 && x2 <= x1 + w1) {
-            if (y2 >= y1 && y2 <= y1 + h1)
-                return true;
-        }
+        if (y2 >= y1 && y2 <= y1 + h1)
+            return true;
+    }
         if (x2+w2>=x1 && x2+w2<=x1+w1) { // Top right corner
             if (y2 >= y1 && y2 <= y1 + h1)
                 return true;
         }
+//        if (x2 >= x1 && x2 <= x1 + w1) {
+//            if (y2 <= y1 && y2 + h2 >= y1 + h1)
+//                return true;
+        //}
             return false;
     }
 
@@ -207,7 +222,7 @@ private Spriteanimation flyingcoins;
         {
             case MotionEvent.ACTION_DOWN:
                 // to check finger touch x,y with image (spaceship)
-                if (CheckCollision(mX, mY, ship[shipIndex].getWidth() / 2, ship[shipIndex].getHeight() / 2, X, Y, 0, 0))
+                if (CheckCollision(mX, mY, ship[shipIndex].getWidth() / 2, ship[shipIndex].getHeight() / 2, X, Y, 0, 0) || CheckCollision(mX, mY, ship[shipIndex].getWidth(), ship[shipIndex].getHeight(), X, Y, 0, 0))
                 {
                       moveship = true;
                 }
@@ -220,7 +235,8 @@ private Spriteanimation flyingcoins;
                 if (moveship == true)
                 {
                     mX = (short)(X - ship[shipIndex].getWidth() /2 );
-                }   mY = (short)(Y - ship[shipIndex].getHeight() /2);
+                    mY = (short)(Y - ship[shipIndex].getHeight() /2);
+                }
                 // Check collision with flying coin
                 if (CheckCollision(mX, mY, ship[shipIndex].getWidth() / 2, ship[shipIndex].getHeight() / 2, coinX, coinY, flyingcoins.getSpriteWidth() / 2, flyingcoins.getSpriteHeight() / 2))
                 {
