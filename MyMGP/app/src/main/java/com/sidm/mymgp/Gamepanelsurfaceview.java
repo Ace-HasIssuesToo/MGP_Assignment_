@@ -14,6 +14,8 @@ import android.view.SurfaceView;
 
 import java.util.Random;
 
+import static android.R.attr.x;
+
 /**
  * Created by 153942B on 11/24/2016.
  */
@@ -37,17 +39,32 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // 2 more variables to place my ship where it will be based on the touch of the screen
     private short mX = 0, mY = 0;
 
+
     // var for flying coin
     private int coinX = 0, coinY = 0;
     protected boolean moveship = false;
 
     // var for one grid circle
     private float cirX = 0, cirY = 0;
-    private float cir2X = 0, cir2Y = 0;
-    private float cir3X = 0, cir3Y = 0;
     private Bitmap circle;
+
+    //Ebola Hardcode for now
+    private float cirX1 = 0, cirY1 = 0;
+    private Bitmap circle1;
+    private float cirX2 = 0, cirY2 = 0;
     private Bitmap circle2;
+    private float cirX3 = 0, cirY3 = 0;
     private Bitmap circle3;
+    private float cirX4 = 0, cirY4 = 0;
+    private Bitmap circle4;
+    private float cirX5 = 0, cirY5 = 0;
+    private Bitmap circle5;
+    private float cirX6 = 0, cirY6 = 0;
+    private Bitmap circle6;
+    private float cirX7 = 0, cirY7 = 0;
+    private Bitmap circle7;
+    private float cirX8 = 0, cirY8 = 0;
+    private Bitmap circle8;
 
     // var for line
     private Fingerline line;
@@ -84,8 +101,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // for grid circle and line
         circle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle1 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
         circle2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
         circle3 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle4 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle5 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle6 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle7 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle8 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
         line = new Fingerline();
         line.setStart(-1, -1);
         for (int i = 0; i < linelist.length; ++i)
@@ -194,19 +217,47 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             linelist[i].draw(canvas);
 
         // draw the grid
-        canvas.drawBitmap(circle, cirX, cirY, null); // location of the ship is based on the touch
-        canvas.drawBitmap(circle2, cir2X, cir2Y, null); // location of the ship is based on the touch
-        canvas.drawBitmap(circle3, cir3X, cir3Y, null); // location of the ship is based on the touch
+        canvas.drawBitmap(circle, cirX, cirY, null);
 //        for (int i = 0; i < gridarray.length; ++i)
 //        {
 //            canvas.drawBitmap(gridarray[i].bitmap, gridarray[i].x, gridarray[i].y, null); // location of the ship is based on the touch
 //        }
-        cirX = Screenwidth / 10;
+        cirX = Screenwidth / 10 + 10;
         cirY = Screenheight * 0.5f;
-        cir2X = Screenwidth / 2;
-        cir2Y = Screenheight * 0.5f;
-        cir3X = Screenwidth / 10;
-        cir3Y = Screenheight * 0.2f;
+
+        canvas.drawBitmap(circle1, cirX1, cirY1, null);
+        cirX1 = Screenwidth / 10;
+        cirY1 = Screenheight * 0.5f;
+
+        canvas.drawBitmap(circle2, cirX2, cirY2, null);
+        cirX2 = Screenwidth / 10 - 10;
+        cirY2 = Screenheight * 0.5f;
+
+        canvas.drawBitmap(circle3, cirX3, cirY3, null);
+        cirX3 = Screenwidth / 10 + 10;
+        cirY3 = Screenheight * 0.5f + 0.5f;
+
+        canvas.drawBitmap(circle4, cirX4, cirY4, null);
+        cirX4 = Screenwidth / 10;
+        cirY4 = Screenheight * 0.5f + 0.5f;
+
+        canvas.drawBitmap(circle5, cirX5, cirY5 , null);
+        cirX5 = Screenwidth / 10 - 10;
+        cirY5 = Screenheight * 0.5f + 0.5f;
+
+        canvas.drawBitmap(circle6, cirX6, cirY6, null);
+        cirX6 = Screenwidth / 10 + 10;
+        cirY6 = Screenheight * 0.5f - .5f;
+
+        canvas.drawBitmap(circle7, cirX7, cirY7, null);
+        cirX7 = Screenwidth / 10;
+        cirY7 = Screenheight * 0.5f -.5f;
+
+        canvas.drawBitmap(circle8, cirX8, cirY8, null);
+        cirX8 = Screenwidth / 10 - 10;
+        cirY8 = Screenheight * 0.5f -.5f;
+
+
     }
 
 
@@ -334,17 +385,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     line.setEnd(X, Y);
                     invalidate();
                 }
-                if (checkOnGrid(event, cir2X, cir2Y, circle2.getWidth(), circle2.getHeight()) && line.isDrawn == false) {
+                if (checkOnGrid(event, cirX, cirX, circle.getWidth(), circle.getHeight()) && line.isDrawn == false) {
                     line.setEnd(X, Y);
                     invalidate();
                     line.isDrawn = true;
                 }
 
-                if (checkOnGrid(event, cir2X, cir2Y, circle2.getWidth(), circle2.getHeight()) && line.isDrawn && numLines == 0) {
+                if (checkOnGrid(event, cirX1, cirY1, circle1.getWidth(), circle1.getHeight()) && line.isDrawn && numLines == 0) {
                     linelist[numLines].setStart(X, Y);
                 }
 
-                if (checkOnGrid(event, cir3X, cir3Y, circle3.getWidth(), circle3.getHeight()) && line.isDrawn && numLines == 0)
+                if (checkOnGrid(event, cirX2, cirY2, circle2.getWidth(), circle2.getHeight()) && line.isDrawn && numLines == 0)
                 {
                     linelist[numLines].setEnd(X, Y);
                     ++numLines;
