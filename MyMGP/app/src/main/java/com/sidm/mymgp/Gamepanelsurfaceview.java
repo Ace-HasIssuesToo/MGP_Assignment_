@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.text.style.LineBackgroundSpan;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,7 +22,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Implement this interface to receive information about changes to the surface.
 
     private Gamethread myThread = null; // Thread to control the rendering
-
     // 1a) Variables used for background rendering
     private Bitmap bg, scalebg; //bg = background and scaledbg = version of bg
     // 1b) Define Screen width and Screen height as integer
@@ -29,6 +30,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private short bgX = 0, bgY = 0;
     // 4a) bitmap array to stores 4 images of the spaceship
     private Bitmap[] ship = new Bitmap[3];
+    final int numGrids = 9;
+    private Grid[] gridarray = new Grid[numGrids];
     // 4b) Variable as an index to keep track of the spaceship images
     private short shipIndex = 0;
     // 2 more variables to place my ship where it will be based on the touch of the screen
@@ -40,8 +43,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     // var for one grid circle
     private float cirX = 0, cirY = 0;
+    private float cir2X = 0, cir2Y = 0;
+    private float cir3X = 0, cir3Y = 0;
     private Bitmap circle;
+    private Bitmap circle2;
+    private Bitmap circle3;
 
+    // var for line
+    private Fingerline line;
+    private Fingerline[] linelist = new Fingerline[numGrids];
+    int numLines = 0;
     // Variables for FPS
     public float FPS;
     float deltaTime;
@@ -51,7 +62,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private short GameState;
 
     // Init the Sprite Animation
-private Spriteanimation flyingcoins;
+    private Spriteanimation flyingcoins;
 
     //constructor for this GamePanelSurfaceView class
     public Gamepanelsurfaceview (Context context){
@@ -70,13 +81,47 @@ private Spriteanimation flyingcoins;
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.gamescene);
         scalebg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
 
-        circle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
 
+        // for grid circle and line
+        circle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle3 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        line = new Fingerline();
+        line.setStart(-1, -1);
+        for (int i = 0; i < linelist.length; ++i)
+        {
+            linelist[i] = new Fingerline();
+        }
         // 4c) Load the images of the spaceships
-        ship[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_1), Screenwidth / 10, Screenheight / 10, true);
-        ship[1] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_2), Screenwidth /10, Screenheight/10, true);
-        ship[2] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_3), Screenwidth/10, Screenheight/10, true);
+//        ship[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_1), Screenwidth / 10, Screenheight / 10, true);
+//        ship[1] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_2), Screenwidth /10, Screenheight/10, true);
+//        ship[2] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_3), Screenwidth/10, Screenheight/10, true);
         //ship[3] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_4), Screenwidth, Screenheight, true);
+
+        for (int i = 0; i < 3; ++i)
+        {
+            ship[i] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_1), Screenwidth / 10, Screenheight / 10, true);
+        }
+
+        for (int i = 0; i < gridarray.length; ++i)
+        {
+            gridarray[i] = new Grid();
+        }
+
+        int posx = 2;
+        for (int i = 0; i < gridarray.length; ++i)
+        {
+            gridarray[i].bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+            if (posx != 0) {
+                gridarray[i].x = Screenwidth / (posx);
+            }
+            else {
+                gridarray[i].x = Screenwidth;
+            }
+            posx += 5;
+            //Log.v("sam", "pos: " + posx + " index: " + i);
+            gridarray[i].y = Screenheight * 0.5f;
+        }
 
         // Load the sprite sheet
         flyingcoins = new Spriteanimation(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.flystar), Screenwidth/4, Screenheight/4, true), 320, 64, 5, 5);
@@ -143,10 +188,25 @@ private Spriteanimation flyingcoins;
         flyingcoins.setX(coinX);
         flyingcoins.setY(coinY);
 
+        // draw line
+        line.draw(canvas);
+        for (int i = 0; i < numLines; ++i)
+            linelist[i].draw(canvas);
+
         // draw the grid
         canvas.drawBitmap(circle, cirX, cirY, null); // location of the ship is based on the touch
+        canvas.drawBitmap(circle2, cir2X, cir2Y, null); // location of the ship is based on the touch
+        canvas.drawBitmap(circle3, cir3X, cir3Y, null); // location of the ship is based on the touch
+//        for (int i = 0; i < gridarray.length; ++i)
+//        {
+//            canvas.drawBitmap(gridarray[i].bitmap, gridarray[i].x, gridarray[i].y, null); // location of the ship is based on the touch
+//        }
         cirX = Screenwidth / 10;
         cirY = Screenheight * 0.5f;
+        cir2X = Screenwidth / 2;
+        cir2Y = Screenheight * 0.5f;
+        cir3X = Screenwidth / 10;
+        cir3Y = Screenheight * 0.2f;
     }
 
 
@@ -213,14 +273,52 @@ private Spriteanimation flyingcoins;
             return false;
     }
 
+    boolean fCheckCollision(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2)
+    {
+        if (x2 >= x1 && x2 <= x1 + w1) {
+            if (y2 >= y1 && y2 <= y1 + h1)
+                return true;
+        }
+        if (x2+w2>=x1 && x2+w2<=x1+w1) { // Top right corner
+            if (y2 >= y1 && y2 <= y1 + h1)
+                return true;
+        }
+//        if (x2 >= x1 && x2 <= x1 + w1) {
+//            if (y2 <= y1 && y2 + h2 >= y1 + h1)
+//                return true;
+        //}
+        return false;
+    }
+
+    public boolean checkOnGrid(MotionEvent event, float x, float y, float width, float height)
+    {
+        short X = (short)event.getX(); // t
+        short Y = (short)event.getY();
+        if (fCheckCollision(x, y, width, height, X, Y, 0, 0))
+        {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event){ // edit
         short X = (short)event.getX(); // t
         short Y = (short)event.getY();
         int action = event.getAction(); // check for the action of touch
+
         switch(action)
         {
             case MotionEvent.ACTION_DOWN:
+                if (checkOnGrid(event, cirX, cirY, circle.getWidth(), circle.getHeight()) && line.isDrawn == false)
+                {
+                    X = (short)(cirX);
+                    Y = (short)(cirY);
+                    line.setStart(X, Y);
+                    line.isDraw = true;
+                    invalidate();
+                }
+
                 // to check finger touch x,y with image (spaceship)
                 if (CheckCollision(mX, mY, ship[shipIndex].getWidth() / 2, ship[shipIndex].getHeight() / 2, X, Y, 0, 0) || CheckCollision(mX, mY, ship[shipIndex].getWidth(), ship[shipIndex].getHeight(), X, Y, 0, 0))
                 {
@@ -232,6 +330,25 @@ private Spriteanimation flyingcoins;
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (line.isDraw && !line.isDrawn) {
+                    line.setEnd(X, Y);
+                    invalidate();
+                }
+                if (checkOnGrid(event, cir2X, cir2Y, circle2.getWidth(), circle2.getHeight()) && line.isDrawn == false) {
+                    line.setEnd(X, Y);
+                    invalidate();
+                    line.isDrawn = true;
+                }
+
+                if (checkOnGrid(event, cir2X, cir2Y, circle2.getWidth(), circle2.getHeight()) && line.isDrawn && numLines == 0) {
+                    linelist[numLines].setStart(X, Y);
+                }
+
+                if (checkOnGrid(event, cir3X, cir3Y, circle3.getWidth(), circle3.getHeight()) && line.isDrawn && numLines == 0)
+                {
+                    linelist[numLines].setEnd(X, Y);
+                    ++numLines;
+                }
                 if (moveship == true)
                 {
                     mX = (short)(X - ship[shipIndex].getWidth() /2 );
@@ -243,6 +360,17 @@ private Spriteanimation flyingcoins;
                     Random randomnum = new Random();
                     coinX = randomnum.nextInt(Screenwidth);
                     coinY = randomnum.nextInt(Screenheight);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (!line.isDrawn) {
+                    line.setStart(0, 0);
+                    line.setEnd(line.getStartX(), line.getStartY());
+                }
+                for (int i = 0; i < linelist.length; ++i)
+                {
+                    linelist[i].setStart(0, 0);
+                    linelist[i].setEnd(linelist[i].getStartX(), linelist[i].getStartY());
                 }
                 break;
         }          return true;
