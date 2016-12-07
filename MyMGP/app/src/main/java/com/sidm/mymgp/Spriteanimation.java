@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 
-/**
+/*
  * Created by 153942B on 12/1/2016.
  */
 

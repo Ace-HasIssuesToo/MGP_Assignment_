@@ -12,6 +12,8 @@ import android.view.SurfaceView;
 
 import java.util.Random;
 
+import static android.R.attr.x;
+
 /**
  * Created by 153942B on 11/24/2016.
  */
@@ -34,6 +36,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // 2 more variables to place my ship where it will be based on the touch of the screen
     private short mX = 0, mY = 0;
 
+
     // var for flying coin
     private int coinX = 0, coinY = 0;
     protected boolean moveship = false;
@@ -41,6 +44,24 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // var for one grid circle
     private float cirX = 0, cirY = 0;
     private Bitmap circle;
+
+    //Ebola Hardcode for now
+    private float cirX1 = 0, cirY1 = 0;
+    private Bitmap circle1;
+    private float cirX2 = 0, cirY2 = 0;
+    private Bitmap circle2;
+    private float cirX3 = 0, cirY3 = 0;
+    private Bitmap circle3;
+    private float cirX4 = 0, cirY4 = 0;
+    private Bitmap circle4;
+    private float cirX5 = 0, cirY5 = 0;
+    private Bitmap circle5;
+    private float cirX6 = 0, cirY6 = 0;
+    private Bitmap circle6;
+    private float cirX7 = 0, cirY7 = 0;
+    private Bitmap circle7;
+    private float cirX8 = 0, cirY8 = 0;
+    private Bitmap circle8;
 
     // Variables for FPS
     public float FPS;
@@ -71,6 +92,14 @@ private Spriteanimation flyingcoins;
         scalebg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
 
         circle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle1 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle3 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle4 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle5 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle6 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle7 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle8 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
 
         // 4c) Load the images of the spaceships
         ship[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_1), Screenwidth / 10, Screenheight / 10, true);
@@ -144,9 +173,43 @@ private Spriteanimation flyingcoins;
         flyingcoins.setY(coinY);
 
         // draw the grid
-        canvas.drawBitmap(circle, cirX, cirY, null); // location of the ship is based on the touch
-        cirX = Screenwidth / 10;
+        canvas.drawBitmap(circle, cirX, cirY, null);
+        cirX = Screenwidth / 10 + 10;
         cirY = Screenheight * 0.5f;
+
+        canvas.drawBitmap(circle1, cirX1, cirY1, null);
+        cirX1 = Screenwidth / 10;
+        cirY1 = Screenheight * 0.5f;
+
+        canvas.drawBitmap(circle2, cirX2, cirY2, null);
+        cirX2 = Screenwidth / 10 - 10;
+        cirY2 = Screenheight * 0.5f;
+
+        canvas.drawBitmap(circle3, cirX3, cirY3, null);
+        cirX3 = Screenwidth / 10 + 10;
+        cirY3 = Screenheight * 0.5f + 0.5f;
+
+        canvas.drawBitmap(circle4, cirX4, cirY4, null);
+        cirX4 = Screenwidth / 10;
+        cirY4 = Screenheight * 0.5f + 0.5f;
+
+        canvas.drawBitmap(circle5, cirX5, cirY5 , null);
+        cirX5 = Screenwidth / 10 - 10;
+        cirY5 = Screenheight * 0.5f + 0.5f;
+
+        canvas.drawBitmap(circle6, cirX6, cirY6, null);
+        cirX6 = Screenwidth / 10 + 10;
+        cirY6 = Screenheight * 0.5f - .5f;
+
+        canvas.drawBitmap(circle7, cirX7, cirY7, null);
+        cirX7 = Screenwidth / 10;
+        cirY7 = Screenheight * 0.5f -.5f;
+
+        canvas.drawBitmap(circle8, cirX8, cirY8, null);
+        cirX8 = Screenwidth / 10 - 10;
+        cirY8 = Screenheight * 0.5f -.5f;
+
+
     }
 
 
