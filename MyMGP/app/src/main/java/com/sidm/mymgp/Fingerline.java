@@ -61,4 +61,8 @@ public class Fingerline {
         endX = x;
         endY = y;
     }
+    public void setStartX(float x) { startX = x; }
+    public void setStartY(float y) { startY = y; }
+    public void setEndX(float x) { endX = x; }
+    public void setEndY(float y) { endY = y; }
 }
