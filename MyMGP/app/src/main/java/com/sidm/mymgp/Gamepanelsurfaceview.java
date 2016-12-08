@@ -1,10 +1,14 @@
 package com.sidm.mymgp;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.text.style.LineBackgroundSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -70,11 +74,20 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     float deltaTime;
     long dt;
 
+    intersection intersectCheck;
+
+    Typeface myfont;
+
+    private Bitmap rating;
+    int numRate;
+    int numHealth;
+    Activity activityTracker; // used to track and launch different activity
+
     // Variable for Game State check // EDIT Scenemanager
     private short GameState;
 
     //constructor for this GamePanelSurfaceView class
-    public Gamepanelsurfaceview (Context context){
+    public Gamepanelsurfaceview (Context context, Activity activity){
 
         // Context is the current state of the application/object
         super(context);
@@ -97,15 +110,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             gridarray[i] = new Grid();
         }
 
-        circle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle1 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle3 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle4 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle5 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle6 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle7 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle8 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
+        circle1 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
+        circle2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
+        circle3 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
+        circle4 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
+        circle5 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
+        circle6 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
+        circle7 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
+        circle8 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenwidth / 10, true);
         cirX = Screenwidth / 10;
         cirY = Screenheight * 0.5f;
         cirX1 = Screenwidth / 2;
@@ -148,12 +161,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 //            //Log.v("sam", "pos: " + posx + " index: " + i);
 //            gridarray[i].y = Screenheight * 0.5f;
 //        }
-
-        // Create the game loop thread
+        rating = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.star), Screenwidth / 10, Screenwidth / 10, true);
+        numRate = 3;
+        numHealth = 20;
         myThread = new Gamethread(getHolder(), this);
-
+        myfont = Typeface.createFromAsset(getContext().getAssets(), "fonts/arial.ttf");
         // Make the GamePanel focusable so it can handle events
         setFocusable(true);
+
+        activityTracker = activity;
+        Intent intent = new Intent();
+        intent.setClass(getContext(), Mainmenu.class);
+        //activityTracker.startActivity(intent);
     }
 
     //must implement inherited abstract methods
@@ -187,6 +206,39 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height){
 
+    }
+
+    private void RenderRating(Canvas canvas)
+    {
+        switch(numRate) {
+            case 3:
+                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
+                canvas.drawBitmap(rating, 78, Screenheight - 700, null);
+                canvas.drawBitmap(rating, 128, Screenheight - 700, null);
+                break;
+            case 2:
+                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
+                canvas.drawBitmap(rating, 78, Screenheight - 700, null);
+                break;
+            case 1:
+                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
+                break;
+            default:
+
+                break;
+        }
+    }
+
+    private void RenderHealthbar(Canvas canvas)
+    {
+        Paint paint = new Paint();
+        paint.setColor(Color.GREEN);
+        paint.setStrokeWidth(10);
+        paint.setStyle(Paint.Style.STROKE); // FILL AND STROKE
+        canvas.drawRect(Screenwidth / 20 + 5, Screenheight/20 - 5, 4*Screenwidth/20, 2 * Screenheight/25, paint);
+        paint.setColor(Color.GREEN);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(Screenwidth / 20 + 8, Screenheight/20, Screenwidth/20 + numHealth, 2 * Screenheight/25 - 5, paint);
     }
 
     public void RenderGameplay(Canvas canvas) { // edit
@@ -277,6 +329,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 //        cirX8 = Screenwidth / 10 - 10;
 //        cirY8 = Screenheight * 0.5f -.5f;
         RenderTextOnScreen(canvas, "T-Score: " + totalScore, 110, 1000, 80, 0, 0, 255, 255);
+        RenderRating(canvas);
+        RenderHealthbar(canvas);
     }
 
     public int touchGrid(MotionEvent event)
@@ -334,6 +388,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         paint.setARGB(alpha, r, g, b);
         paint.setStrokeWidth(100);
         paint.setTextSize(textsize);
+        paint.setTypeface(myfont);
         canvas.drawText(text, posX, posY, paint);
     }
 
@@ -382,7 +437,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
         return false;
     }
-
     @Override
     public boolean onTouchEvent(MotionEvent event){ // edit
         short X = (short)event.getX(); // t
@@ -395,7 +449,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             case MotionEvent.ACTION_DOWN:
                 if (currIndex >= 0 && linelist[numLines].isDrawn == false)
                 {
-                    linelist[numLines].setStart(X, Y);
+                    linelist[numLines].setStartX((short)(gridarray[currIndex].x + gridarray[currIndex].bitmap.getWidth() / 2));
+                    linelist[numLines].setStartY((short)(gridarray[currIndex].y + gridarray[currIndex].bitmap.getHeight() / 2));
+                    //linelist[numLines].setStart(X, Y);
                     linelist[numLines].isDraw = true;
                     prevIndex = currIndex;
                     invalidate();
@@ -403,9 +459,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (currIndex >= 0 && currIndex != prevIndex && !linelist[numLines].isDrawn) {
-                    if (numLines != 0)
-                        linelist[numLines].setStart(linelist[numLines - 1].getEndX(), linelist[numLines- 1].getEndY());
-                    linelist[numLines].setEnd(X, Y);
+                    if (numLines != 0) {
+                        linelist[numLines].setStart(linelist[numLines - 1].getEndX(), linelist[numLines - 1].getEndY());
+                    }
+                    linelist[numLines].setEndX((short)(gridarray[currIndex].x + gridarray[currIndex].bitmap.getWidth() / 2));
+                    linelist[numLines].setEndY((short)(gridarray[currIndex].y + gridarray[currIndex].bitmap.getHeight() / 2));
                     linelist[numLines].isDrawn = true;
                     ++numLines;
                     prevIndex = currIndex;
@@ -433,21 +491,39 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 //                }
                 break;
             case MotionEvent.ACTION_UP:
-//                if (!line.isDrawn) {
-//                    line.setStart(0, 0);
-//                    line.setEnd(line.getStartX(), line.getStartY());
-//                }
-                //else if (line.isDrawn) {
+               //for (int i = 0; i < linelist.length; ++i)
+               //{
+               //    for (int j = 0; j < linelist.length; ++j)
+               //    {
+               //        if(i != j)
+               //        {
+                            intersectCheck = new intersection(linelist[0],linelist[2]);
+                            Vector2D temp1, temp2, temp3, temp4;
+                            temp1 = new Vector2D(linelist[0].getStartX(),linelist[0].getStartY());
+                            temp2 = new Vector2D(linelist[0].getEndX(),linelist[0].getEndY());
+                            temp3 = new Vector2D(linelist[2].getStartX(),linelist[2].getStartY());
+                            temp4 = new Vector2D(linelist[2].getEndX(),linelist[2].getEndY());
+                            if(intersectCheck.algebraNonsense())
+                            {
+                                currScore++;
+                            }
+                   //     }
+                //        else
+                 //       {
+
+                //        }
+                   // }
+                //}
                     for (int i = 0; i < linelist.length; ++i) {
                         linelist[i].setStart(0, 0);
                         linelist[i].setEnd(linelist[i].getStartX(), linelist[i].getStartY());
                         linelist[i].isDraw = false;
                         linelist[i].isDrawn = false;
                     }
-                currScore = numLines;
+                totalScore += currScore;
+                currScore = 0;
                 numLines = 0;
                 prevIndex = 0;
-                totalScore += currScore;
                 //}
                 break;
         }          return true;
