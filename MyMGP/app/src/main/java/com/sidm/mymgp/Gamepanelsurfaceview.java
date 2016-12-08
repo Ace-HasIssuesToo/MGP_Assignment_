@@ -55,6 +55,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private float cirX8 = 0, cirY8 = 0;
     private Bitmap circle8;
 
+    private Spriteanimation circlePressed;
+
     // var for line
     private Fingerline[] linelist = new Fingerline[numGrids + 1];
     int numLines = 0;
@@ -88,7 +90,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.matrix);
         scalebg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
 
-
+        //circlePressed = new Spriteanimation(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.techcirclespritesheet)), (int) (Screenwidth)/10, (int) (Screenheight)/10, true), 320, 64, 5, 3);
         // for grid circle and line
         for (int i = 0; i < gridarray.length; ++i)
         {
@@ -205,6 +207,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         for (int i = 0; i < numLines; ++i)
             linelist[i].draw(canvas);
 
+        //circlePressed.draw(canvas);
         // draw the grid
         //canvas.drawBitmap(circle, cirX, cirY, null);
 //        for (int i = 0; i < gridarray.length; ++i)
@@ -294,7 +297,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     //Update method to update the game play
     public void update(float dt, float fps){ // edit
         FPS = fps;
-
         switch (GameState) {
             case 0: {
                 // 3) Update the background to allow panning effect
@@ -303,6 +305,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     bgY=0;
                 }
+                //circlePressed.update(System.currentTimeMillis());
             }
             break;
         }

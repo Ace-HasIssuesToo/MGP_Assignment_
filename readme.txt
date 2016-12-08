@@ -11,3 +11,6 @@ Score for triangle shape(not ngon i know)
 
 Alternatively, each grid circle object can contain two pointer references to two nearest proximity circles.
 If player checks through all three, same thing
+
+Menu flow
+- splashscreen -> sponsor screen -> main menu -> level selection
