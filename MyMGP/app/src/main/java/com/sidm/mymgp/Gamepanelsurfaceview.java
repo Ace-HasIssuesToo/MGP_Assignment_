@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.text.style.LineBackgroundSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -32,28 +33,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private short bgX = 0, bgY = 0;
     final int numGrids = 9;
     private Grid[] gridarray = new Grid[numGrids];
+    private endpoints[] endlist = new endpoints[100];
 
     // var for one grid circle
     private float cirX = 0, cirY = 0;
-    private Bitmap circle;
+    private Spriteanimation circle;
+    private Spriteanimation circleP;
 
     //Ebola Hardcode for now
     private float cirX1 = 0, cirY1 = 0;
-    private Bitmap circle1;
     private float cirX2 = 0, cirY2 = 0;
-    private Bitmap circle2;
     private float cirX3 = 0, cirY3 = 0;
-    private Bitmap circle3;
-    private float cirX4 = 0, cirY4 = 0;
-    private Bitmap circle4;
-    private float cirX5 = 0, cirY5 = 0;
-    private Bitmap circle5;
-    private float cirX6 = 0, cirY6 = 0;
-    private Bitmap circle6;
-    private float cirX7 = 0, cirY7 = 0;
-    private Bitmap circle7;
-    private float cirX8 = 0, cirY8 = 0;
-    private Bitmap circle8;
 
     private Spriteanimation circlePressed;
 
@@ -69,6 +59,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public float FPS;
     float deltaTime;
     long dt;
+
+    //define font type used
+    Typeface myfont;
 
     // Variable for Game State check // EDIT Scenemanager
     private short GameState;
@@ -90,22 +83,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.matrix);
         scalebg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
 
-        //circlePressed = new Spriteanimation(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.techcirclespritesheet)), (int) (Screenwidth)/10, (int) (Screenheight)/10, true), 320, 64, 5, 3);
+        circlePressed = new Spriteanimation(BitmapFactory.decodeResource(getResources(),R.drawable.techcirclespritesheet), 288, 96, 3, 3);
         // for grid circle and line
         for (int i = 0; i < gridarray.length; ++i)
         {
             gridarray[i] = new Grid();
         }
-
-        circle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle1 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle3 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle4 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle5 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle6 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle7 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-        circle8 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+        circleP = new Spriteanimation(BitmapFactory.decodeResource(getResources(),R.drawable.techcircle2), 384 / 2, 128 / 2, 1, 1);
+        circle = new Spriteanimation(BitmapFactory.decodeResource(getResources(),R.drawable.techcirclespritesheet2), 384 / 2, 128 / 2, 3, 3);
         cirX = Screenwidth / 10;
         cirY = Screenheight * 0.5f;
         cirX1 = Screenwidth / 2;
@@ -115,22 +100,29 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         cirX3 = Screenwidth / 2;
         cirY3 = Screenheight * 0.25f;
 
-        gridarray[0].bitmap = circle;
+        gridarray[0].spriteanimation = circleP;
         gridarray[0].x = cirX;
         gridarray[0].y = cirY;
-        gridarray[1].bitmap = circle1;
+        gridarray[1].spriteanimation = circleP;
         gridarray[1].x = cirX1;
         gridarray[1].y = cirY1;
-        gridarray[2].bitmap = circle2;
+        gridarray[2].spriteanimation = circleP;
         gridarray[2].x = cirX2;
         gridarray[2].y = cirY2;
-        gridarray[3].bitmap = circle3;
+        gridarray[3].spriteanimation = circleP;
         gridarray[3].x = cirX3;
         gridarray[3].y = cirY3;
+
+        //Load font
+        myfont = Typeface.createFromAsset(getContext().getAssets(),"fonts/finalf.ttf");
 
         for (int i = 0; i < linelist.length; ++i)
         {
             linelist[i] = new Fingerline();
+        }
+        for (int i = 0; i < endlist.length; ++i)
+        {
+            endlist[i] = new endpoints();
         }
 
         totalScore = 0; currScore = 0;
@@ -207,76 +199,19 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         for (int i = 0; i < numLines; ++i)
             linelist[i].draw(canvas);
 
-        //circlePressed.draw(canvas);
+
         // draw the grid
-        //canvas.drawBitmap(circle, cirX, cirY, null);
-//        for (int i = 0; i < gridarray.length; ++i)
-//        {
-//            canvas.drawBitmap(gridarray[i].bitmap, gridarray[i].x, gridarray[i].y, null); // location of the ship is based on the touch
-//        }
-//        cirX = Screenwidth / 10 + 10;
-//        cirY = Screenheight * 0.5f;
-//
-//        canvas.drawBitmap(circle1, cirX1, cirY1, null);
-//        cirX1 = Screenwidth / 10;
-//        cirY1 = Screenheight * 0.5f;
-//
-//        canvas.drawBitmap(circle2, cirX2, cirY2, null);
-//        cirX2 = Screenwidth / 10 - 10;
-//        cirY2 = Screenheight * 0.5f;
-//
-//        canvas.drawBitmap(circle3, cirX3, cirY3, null);
-//        cirX3 = Screenwidth / 10 + 10;
-//        cirY3 = Screenheight * 0.5f + 0.5f;
-//
-//        canvas.drawBitmap(circle4, cirX4, cirY4, null);
-//        cirX4 = Screenwidth / 10;
-//        cirY4 = Screenheight * 0.5f + 0.5f;
-//
-//        canvas.drawBitmap(circle5, cirX5, cirY5 , null);
-//        cirX5 = Screenwidth / 10 - 10;
-//        cirY5 = Screenheight * 0.5f + 0.5f;
-//
-//        canvas.drawBitmap(circle6, cirX6, cirY6, null);
-//        cirX6 = Screenwidth / 10 + 10;
-//        cirY6 = Screenheight * 0.5f - .5f;
-//
-//        canvas.drawBitmap(circle7, cirX7, cirY7, null);
-//        cirX7 = Screenwidth / 10;
-//        cirY7 = Screenheight * 0.5f -.5f;
-//
-//        canvas.drawBitmap(circle8, cirX8, cirY8, null);
-//        cirX8 = Screenwidth / 10 - 10;
-//        cirY8 = Screenheight * 0.5f -.5f;
 
         for (int i = 0; i < gridarray.length; ++i)
         {
-            if (gridarray[i].bitmap != null)
+            if (gridarray[i].spriteanimation != null)
             {
-                canvas.drawBitmap(gridarray[i].bitmap, gridarray[i].x, gridarray[i].y, null);
+                gridarray[i].spriteanimation.draw(canvas);
+                gridarray[i].spriteanimation.setX((int)gridarray[i].x);
+                gridarray[i].spriteanimation.setY((int)gridarray[i].y);
             }
         }
-
-//        canvas.drawBitmap(circle4, cirX4, cirY4, null);
-//        cirX4 = Screenwidth / 10;
-//        cirY4 = Screenheight * 0.5f + 0.5f;
-//
-//        canvas.drawBitmap(circle5, cirX5, cirY5 , null);
-//        cirX5 = Screenwidth / 10 - 10;
-//        cirY5 = Screenheight * 0.5f + 0.5f;
-//
-//        canvas.drawBitmap(circle6, cirX6, cirY6, null);
-//        cirX6 = Screenwidth / 10 + 10;
-//        cirY6 = Screenheight * 0.5f - .5f;
-//
-//        canvas.drawBitmap(circle7, cirX7, cirY7, null);
-//        cirX7 = Screenwidth / 10;
-//        cirY7 = Screenheight * 0.5f -.5f;
-//
-//        canvas.drawBitmap(circle8, cirX8, cirY8, null);
-//        cirX8 = Screenwidth / 10 - 10;
-//        cirY8 = Screenheight * 0.5f -.5f;
-        RenderTextOnScreen(canvas, "T-Score: " + totalScore, 110, 1000, 80, 0, 0, 255, 255);
+        RenderTextOnScreen(canvas, "T-SCORE: " + totalScore, 110, 1000, 80, 0, 0, 255, 255);
     }
 
     public int touchGrid(MotionEvent event)
@@ -285,7 +220,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         {
             float x = gridarray[i].x;
             float y = gridarray[i].y;
-            if(gridarray[i].bitmap != null && checkOnGrid(event, x, y, gridarray[i].bitmap.getWidth(), gridarray[i].bitmap.getHeight()))
+            if(gridarray[i].spriteanimation != null && checkOnGrid(event, x, y, gridarray[i].spriteanimation.getSpriteWidth(), gridarray[i].spriteanimation.getSpriteHeight()))
             {
                 return i; // which grid is being interacted
             }
@@ -305,7 +240,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     bgY=0;
                 }
-                //circlePressed.update(System.currentTimeMillis());
+                circle.update(System.currentTimeMillis());
             }
             break;
         }
@@ -334,6 +269,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         paint.setARGB(alpha, r, g, b);
         paint.setStrokeWidth(100);
         paint.setTextSize(textsize);
+        paint.setTypeface(myfont);
         canvas.drawText(text, posX, posY, paint);
     }
 
@@ -348,10 +284,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             if (y2 >= y1 && y2 <= y1 + h1)
                 return true;
         }
-//        if (x2 >= x1 && x2 <= x1 + w1) {
-//            if (y2 <= y1 && y2 + h2 >= y1 + h1)
-//                return true;
-        //}
             return false;
     }
 
@@ -365,10 +297,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             if (y2 >= y1 && y2 <= y1 + h1)
                 return true;
         }
-//        if (x2 >= x1 && x2 <= x1 + w1) {
-//            if (y2 <= y1 && y2 + h2 >= y1 + h1)
-//                return true;
-        //}
         return false;
     }
 
@@ -393,6 +321,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         switch(action)
         {
             case MotionEvent.ACTION_DOWN:
+                gridarray[currIndex].spriteanimation = circle;
                 if (currIndex >= 0 && linelist[numLines].isDrawn == false)
                 {
                     linelist[numLines].setStart(X, Y);
@@ -402,48 +331,51 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (currIndex >= 0 && currIndex != prevIndex && !linelist[numLines].isDrawn) {
+                if (currIndex >= 0 && currIndex != prevIndex && !linelist[numLines].isDrawn)
+                {
+                    gridarray[currIndex].spriteanimation = circle;
                     if (numLines != 0)
+                    {
                         linelist[numLines].setStart(linelist[numLines - 1].getEndX(), linelist[numLines- 1].getEndY());
+                        Log.v("index", "circle " + currIndex + " light up!");
+                    }
+                    else if(numLines <= 2)
+                    {
+                        for (int i = 0; i < linelist.length; ++i)
+                        {
+                            for (int j = 0; j < linelist.length; ++j)
+                            {
+                                if(endlist[i] == endlist[j])
+                                {
+                                    linelist[numLines].isDrawn = false;
+                                }
+                            }
+                        }
+                    }
                     linelist[numLines].setEnd(X, Y);
                     linelist[numLines].isDrawn = true;
+                    endlist[numLines].setEndPoint(linelist[numLines].getEndX(),linelist[numLines].getEndY());
                     ++numLines;
                     prevIndex = currIndex;
+
                     invalidate();
                 }
                 else if (!linelist[numLines].isDrawn)
                 {
                     linelist[numLines].setEnd(X, Y);
                 }
-//                if (checkOnGrid(event, cirX1, cirY1, circle1.getWidth(), circle1.getHeight()) && line.isDrawn == false) {
-//                    line.setEnd(X, Y);
-//                    invalidate();
-//                    line.isDrawn = true;
-//                }
-//
-//                if (checkOnGrid(event, cirX2, cirY2, circle2.getWidth(), circle2.getHeight()) && line.isDrawn && numLines == 0) {
-//                    linelist[numLines].setStart(X, Y);
-//                    linelist[numLines].isDraw = true;
-//                }
-//
-//                if (checkOnGrid(event, cirX3, cirY3, circle3.getWidth(), circle3.getHeight()) && line.isDrawn && numLines == 0)
-//                {
-//                    linelist[numLines].setEnd(X, Y);
-//                    ++numLines;
-//                }
                 break;
             case MotionEvent.ACTION_UP:
-//                if (!line.isDrawn) {
-//                    line.setStart(0, 0);
-//                    line.setEnd(line.getStartX(), line.getStartY());
-//                }
-                //else if (line.isDrawn) {
-                    for (int i = 0; i < linelist.length; ++i) {
-                        linelist[i].setStart(0, 0);
+                    for (int i = 0; i < linelist.length; ++i)
+                    {
                         linelist[i].setEnd(linelist[i].getStartX(), linelist[i].getStartY());
                         linelist[i].isDraw = false;
                         linelist[i].isDrawn = false;
                     }
+                for(int i = 0; i < gridarray.length; i++)
+                {
+                    gridarray[i].spriteanimation = circleP;
+                }
                 currScore = numLines;
                 numLines = 0;
                 prevIndex = 0;

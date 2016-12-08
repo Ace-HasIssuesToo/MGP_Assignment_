@@ -9,7 +9,7 @@ import android.graphics.Bitmap;
 public class Grid {
     float x;
     float y;
-    Bitmap bitmap;
+    Spriteanimation spriteanimation;
 
     public Grid()
     {
