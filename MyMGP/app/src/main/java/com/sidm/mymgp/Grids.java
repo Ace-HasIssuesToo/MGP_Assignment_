@@ -20,8 +20,6 @@ public class Grids{
     Bitmap bitMap;
     Context context;
     DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-    int Screenwidth = metrics.widthPixels;
-    int Screenheight = metrics.heightPixels;
 
     public Grids()
     {

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--A layout defines the visual structure for a user interface, such as the UI for an activity or app widget-->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mainmenu"
@@ -11,11 +12,21 @@
     android:background="@drawable/mainmenu"
     tools:context="com.sidm.mymgp.Mainmenu">
 
-    <TextView
+    <!-- TextView is a text object  -->
+    <!-- Identification of object  -->
+    <!-- the text of this object  -->
+    <!-- wrap_content tells your view to size itself to the dimensions required by its content.-->
+    <!--<TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
-        android:id="@+id/textView" />
+        android:id="@+id/textView" />-->
+
+    <!--<TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        android:id="@+id/textView" />-->
 
     <Button
         android:id="@+id/btn_help"

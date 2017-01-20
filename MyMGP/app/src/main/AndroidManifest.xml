@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sidm.mymgp">
+    <!-- request permission from user to activate vibration -->
+    <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
 
     <application
         android:allowBackup="true"
@@ -9,11 +11,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-
+        <!-- splash page activity -->
         <activity android:name=".Splashpage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <!-- launch app with the splash page -->
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -22,7 +24,6 @@
         <activity android:name=".Mainmenu">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -30,11 +31,16 @@
         <activity android:name=".Gamepage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
+        <activity android:name=".Scorepage">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
     </application>
 

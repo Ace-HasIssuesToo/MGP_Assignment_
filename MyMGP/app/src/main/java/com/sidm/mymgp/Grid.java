@@ -9,11 +9,20 @@ import android.graphics.Bitmap;
 public class Grid {
     float x;
     float y;
-    Bitmap bitmap;
+    // For making sure grid nodes cannot be connected more than once
+    boolean active;
+    Spriteanimation spriteanimation;
 
     public Grid()
     {
         x =0;
         y = 0;
+        active = false;
+    }
+
+    public void SetGridNodePosition(float x_, float y_)
+    {
+        x = x_;
+        y = y_;
     }
 }
