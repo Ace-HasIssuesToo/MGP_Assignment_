@@ -32,6 +32,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import java.util.Random;
+import java.util.Vector;
 
 import static android.R.attr.x;
 
@@ -53,6 +54,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     final int numGrids = 9;
     // Create an array of nodes to form a grid
     private Grid[] gridarray = new Grid[numGrids];
+    // Create a list of enemies, use a EnemyManager class is needed in future
+    private Enemy[] enemy_list = new Enemy[5];
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -151,14 +154,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
         circleP = new Spriteanimation(BitmapFactory.decodeResource(getResources(),R.drawable.techcircle2), 384 / 2, 128 / 2, 1, 1); // Default grid node texture
         circle = new Spriteanimation(BitmapFactory.decodeResource(getResources(),R.drawable.techcirclespritesheet2), 384 / 2, 128 / 2, 3, 3);
-        cirX = Screenwidth / 10;
-        cirY = Screenheight * 0.5f;
-        cirX1 = Screenwidth / 2;
-        cirY1 = Screenheight * 0.5f;
-        cirX2 = Screenwidth / 10;
-        cirY2 = Screenheight * 0.25f;
-        cirX3 = Screenwidth / 2;
-        cirY3 = Screenheight * 0.25f;
+        cirX = Screenwidth * 0.42f - 150;
+        cirY = Screenheight * 0.75f;
+        cirX1 = Screenwidth * 0.42f + 150;
+        cirY1 = Screenheight * 0.75f;
+        cirX2 = Screenwidth * 0.42f - 150;
+        cirY2 = Screenheight * 0.9f;
+        cirX3 = Screenwidth * 0.42f + 150;
+        cirY3 = Screenheight * 0.9f;
 
         gridarray[0].spriteanimation = circleP;
         gridarray[0].x = cirX;
@@ -172,6 +175,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         gridarray[3].spriteanimation = circleP;
         gridarray[3].x = cirX3;
         gridarray[3].y = cirY3;
+
+        Bitmap enemysprite = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.dot)), Screenwidth / 10, Screenwidth / 10, true);
+        final int NUM_WAYPOINT = 25; // How many waypoints are placed for enemy to follow
+        final Vector2D enemyorigin = new Vector2D(Screenwidth * 0.24f, Screenheight * 0.75f); // starting position
+        Vector<Vector2D> des = new Vector<>(); // Vector of waypoints
+        des.add(new Vector2D(Screenwidth * 0.5f, Screenheight * 0.25f));
+        des.add(new Vector2D(Screenwidth * 0.75f, Screenheight * 0.25f));
+        des.add(new Vector2D(Screenwidth * 0.1f, Screenheight * 0.5f));
+        des.add(new Vector2D(Screenwidth * 0.75f, Screenheight * 0.5f));
+        // Initialise enemies
+        for (int i = 0; i < enemy_list.length; ++i)
+        {
+            enemy_list[i] = new Enemy(enemysprite, enemyorigin.x, enemyorigin.y, NUM_WAYPOINT);
+            for (int j = 0; j < des.size(); ++j)
+                enemy_list[i].waypoints[j] = des.elementAt(j);
+        }
 
         //Load font
         myfont = Typeface.createFromAsset(getContext().getAssets(),"fonts/finalf.ttf");
@@ -198,6 +217,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 //            //Log.v("sam", "pos: " + posx + " index: " + i);
 //            gridarray[i].y = Screenheight * 0.5f;
 //        }
+        // filter param is to go through bilinear interpolation for getting a high quality image after scaling up
         rating = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.star), Screenwidth / 10, Screenwidth / 10, true);
         PauseB1 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
         PauseB2 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
@@ -374,6 +394,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             canvas.drawBitmap(PauseB2.getBitmap(), PauseB2.getX(), PauseB2.getY(), null);
     }
 
+    // Render enemies at their position with no paint
+    public void RenderEnemy(Canvas canvas)
+    {
+        for (int i = 0; i < enemy_list.length; ++i)
+            canvas.drawBitmap(enemy_list[i].getBitmap(), enemy_list[i].getPos().x, enemy_list[i].getPos().y, null);
+    }
+
     public void RenderGameplay(Canvas canvas) { // edit
         // 2) Re-draw 2nd image after the 1st image ends
         if (canvas == null) {
@@ -408,7 +435,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         RenderRating(canvas);
         RenderHealthbar(canvas);
         RenderPause(canvas);
-
+        RenderEnemy(canvas);
     }
 
     //Update method to update the game play
@@ -422,7 +449,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     bgY=0;
                 }
-                circle.update(System.currentTimeMillis());
+                // currentTimeMillis is wall-clock time of machine, time passed since program ran
+                circle.update(System.currentTimeMillis()); // Update sprite animation
+                for (int i = 0; i < enemy_list.length; ++i)
+                    enemy_list[i].Update(dt);
                 SensorMove();
             }
             break;

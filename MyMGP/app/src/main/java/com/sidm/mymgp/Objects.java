@@ -7,17 +7,24 @@ package com.sidm.mymgp;
 import android.graphics.Bitmap;
 
 public class Objects {
-    private Bitmap bitmap;
-    private int x;
-    private int y;
-    private int O_Width;
-    private int O_Height;
+    protected Bitmap bitmap;
+    protected Vector2D position = new Vector2D();
+    protected int x;
+    protected int y;
+    protected int O_Width;
+    protected int O_Height;
 
+    public Objects()
+    {
+
+    }
     public Objects (Bitmap bitmap, int x, int y)
     {
         this.bitmap = bitmap;
         this.x = x;
         this.y = y;
+        position.x = x;
+        position.y = y;
     }
 
     public Bitmap getBitmap() {
@@ -43,6 +50,10 @@ public class Objects {
     public void setY(int y) {
         this.y = y;
     }
+    // Get position
+    public Vector2D getPos() {
+        return position;
+    }
 
     public int getWidth() {
         return bitmap.getWidth();
@@ -60,6 +71,10 @@ public class Objects {
     public int setHeight(int O_Height) {
         this.O_Height = O_Height;
         return O_Height;
+    }
+    // takes in delta time
+    public void Update(float dt)
+    {
     }
 }
 
