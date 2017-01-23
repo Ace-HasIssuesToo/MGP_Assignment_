@@ -55,7 +55,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Create an array of nodes to form a grid
     private Grid[] gridarray = new Grid[numGrids];
     // Create a list of enemies, use a EnemyManager class is needed in future
-    private Enemy[] enemy_list = new Enemy[5];
+    final int numEnemies = 5;
+    private Enemy[] enemy_list = new Enemy[numEnemies];
+    //Create a computer mainframe
+    float comPosX = Screenwidth / 2, comPosY = Screenheight / 2;
+    Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
+    private MainFrameOBJ mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -401,6 +406,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             canvas.drawBitmap(enemy_list[i].getBitmap(), enemy_list[i].getPos().x, enemy_list[i].getPos().y, null);
     }
 
+    public void RenderComputer(Canvas canvas)
+    {
+        canvas.drawBitmap(mainframe.getBitmap(), mainframe.getPos().x, mainframe.getPos().y, null);
+    }
+
     public void RenderGameplay(Canvas canvas) { // edit
         // 2) Re-draw 2nd image after the 1st image ends
         if (canvas == null) {
@@ -436,6 +446,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         RenderHealthbar(canvas);
         RenderPause(canvas);
         RenderEnemy(canvas);
+        RenderComputer(canvas);
     }
 
     //Update method to update the game play
@@ -453,6 +464,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 circle.update(System.currentTimeMillis()); // Update sprite animation
                 for (int i = 0; i < enemy_list.length; ++i)
                     enemy_list[i].Update(dt);
+                collisionEnemies();
                 SensorMove();
             }
             break;
@@ -538,6 +550,23 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             return true;
         }
         return false;
+    }
+
+    public void collisionEnemies()
+    {
+        for(int i = 0; i < numEnemies; i++)
+        {
+            float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y)) ;
+            if(Math.sqrt(distance) <= 5)
+            {
+                numHealth -= 1;
+                break;
+            }
+        }
+        if(numHealth <= 0)
+        {
+            //Gameover conditions
+        }
     }
 
     public void startVibrate()
