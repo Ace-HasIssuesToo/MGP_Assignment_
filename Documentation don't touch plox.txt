@@ -19,3 +19,4 @@ two things to check for
 - array that stores used patterns, check newest pattern taken path of circles, cannot reuse pattern, refreshes at end of level
 - array that checks if current endpoint of line has been taken before, if so(++score), and do not add into array else add into it so we can check if there are any intersection of lines in da future
 if they do not find a new grid circle to join with, take away all the endpoints added from array.
+

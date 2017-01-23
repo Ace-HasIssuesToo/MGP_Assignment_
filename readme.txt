@@ -11,6 +11,7 @@ Draw line
 User Input
 Line-Grid Collision
 Scrolling vertically
+Enemies movement
 
 Tristan Chia <150513M>:
 Grids/Grid Feedback
@@ -21,10 +22,9 @@ Vibration
 //Future Plans
 Add level select menu
 Add more levels and larger grid
-Add Vibration
-Add Scoring based on how many sides the shape has
+Add Scoring based on how  many enemies are killed with the same pattern on their backs
 Make the user unable to use the same pattern twice
-Enemies
 Main computer to protect
 Audio
-Vibrates when player does not form pattern or forms pattern that has been formed already
+Enemy grouping
+Environment obstacle to mark where to walk
