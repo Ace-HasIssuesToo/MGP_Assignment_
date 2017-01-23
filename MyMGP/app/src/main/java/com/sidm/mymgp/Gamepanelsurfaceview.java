@@ -32,6 +32,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import java.util.Random;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import static android.R.attr.bottom;
@@ -66,6 +67,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
     private int[] finger_index; // Guess you can say this game is best played with the index_finger, badumtss.
     private int INDEX = 0;
+
+    /*Timer for enemy spawning*/
+    SpawnTimer spawn_timer;
+    /**/
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -197,12 +202,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Initialise enemies
         for (int i = 0; i < enemy_list.length; ++i)
         {
-            enemy_list[i] = new Enemy(enemysprite, enemyorigin.x, enemyorigin.y, NUM_WAYPOINT);
+            enemy_list[i] = new Enemy(enemysprite, enemyorigin.x, enemyorigin.y, NUM_WAYPOINT, false);
             for (int j = 0; j < des.size(); ++j)
                 enemy_list[i].waypoints[j] = des.elementAt(j);
         }
         finger_index = new int[4];
-
+        spawn_timer = new SpawnTimer(0.0f, 5, 0);
         //Load font
         myfont = Typeface.createFromAsset(getContext().getAssets(),"fonts/finalf.ttf");
 
@@ -466,6 +471,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 for (int i = 0; i < enemy_list.length; ++i)
                     if (enemy_list[i].getActive())
                         enemy_list[i].Update(dt);
+                spawn_timer.Update(dt);
+                int inactive_index = GetInactiveEnemy(enemy_list);
+                if (inactive_index >= 0) {
+                    if (spawn_timer.can_run) {
+                        enemy_list[inactive_index].setActive(true);
+                        spawn_timer.can_run = false;
+                    }
+                }
                 SensorMove();
             }
             break;
@@ -616,6 +629,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             else if (bottomleft == 3)
                 finger_pattern = Enemy.PATTERN.TYPE_LEFT;
         }
+    }
+    // Returns an enemy in enemy list that is in-active and ready to spawn, must check for -1(invalid index) to prevent crash
+    public int GetInactiveEnemy(Enemy[] arr)
+    {
+        for (int i = 0; i < arr.length; ++i)
+            if (!arr[i].getActive())
+                return i;
+        return -1; // none are inactive so return invalid index
     }
 
     public void startVibrate()
