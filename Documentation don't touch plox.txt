@@ -20,3 +20,13 @@ two things to check for
 - array that checks if current endpoint of line has been taken before, if so(++score), and do not add into array else add into it so we can check if there are any intersection of lines in da future
 if they do not find a new grid circle to join with, take away all the endpoints added from array.
 
+How to check for pattern
+- we know that there is one node to start the pattern, depending on where it starts, we can rule out that the opposite side nodes are not the pattern nodes
+- we know the third node is the one to decide from these choices
+top right node
+- left, down, example, to do a left, must go through common 2nd node(bottom left), then up by one node
+top left node,
+Must check whether the fourth node is connected, else, no pattern is formed
+
+How to check for intersection
+- Use double for loop, first lines check with all lines, then 2nd, so on and so forth. For repeated numbers like (1, 2) and (2, 1), ignore it to save costs

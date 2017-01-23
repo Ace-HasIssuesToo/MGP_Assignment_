@@ -34,6 +34,7 @@ import android.hardware.SensorManager;
 import java.util.Random;
 import java.util.Vector;
 
+import static android.R.attr.bottom;
 import static android.R.attr.x;
 
 /**
@@ -55,12 +56,25 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Create an array of nodes to form a grid
     private Grid[] gridarray = new Grid[numGrids];
     // Create a list of enemies, use a EnemyManager class is needed in future
+<<<<<<< HEAD
     final int numEnemies = 5;
     private Enemy[] enemy_list = new Enemy[numEnemies];
     //Create a computer mainframe
     float comPosX = Screenwidth / 2, comPosY = Screenheight / 2;
     Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
     private MainFrameOBJ mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
+=======
+    private Enemy[] enemy_list = new Enemy[5];
+    // Determines which pattern player is going to dish out
+    Enemy.PATTERN finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
+    // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
+    private static final int INDEX_TOP_LEFT = 0;
+    private static final int INDEX_TOP_RIGHT = 1;
+    private static final int INDEX_BOTTOM_LEFT = 2;
+    private static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
+    private int[] finger_index; // Guess you can say this game is best played with the index_finger, badumtss.
+    private int INDEX = 0;
+>>>>>>> b72c770b0f502116043678a50cd515a6d7766020
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -196,6 +210,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             for (int j = 0; j < des.size(); ++j)
                 enemy_list[i].waypoints[j] = des.elementAt(j);
         }
+        finger_index = new int[4];
 
         //Load font
         myfont = Typeface.createFromAsset(getContext().getAssets(),"fonts/finalf.ttf");
@@ -236,7 +251,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
        // activityTracker.startActivity(intent);
         // Adding the callback (this) to the surface holder to intercept events on physical surface/screen
         getHolder().addCallback(this);
-        sensor = (SensorManager)getContext() .getSystemService(Context.SENSOR_SERVICE);
+        sensor = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
         sensor.registerListener(this, sensor.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_NORMAL);
 // Welcome toast message
         Toastmessage(context);
@@ -403,7 +418,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public void RenderEnemy(Canvas canvas)
     {
         for (int i = 0; i < enemy_list.length; ++i)
-            canvas.drawBitmap(enemy_list[i].getBitmap(), enemy_list[i].getPos().x, enemy_list[i].getPos().y, null);
+            if (enemy_list[i].getActive())
+                canvas.drawBitmap(enemy_list[i].getBitmap(), enemy_list[i].getPos().x, enemy_list[i].getPos().y, null);
     }
 
     public void RenderComputer(Canvas canvas)
@@ -463,8 +479,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 // currentTimeMillis is wall-clock time of machine, time passed since program ran
                 circle.update(System.currentTimeMillis()); // Update sprite animation
                 for (int i = 0; i < enemy_list.length; ++i)
+<<<<<<< HEAD
                     enemy_list[i].Update(dt);
                 collisionEnemies();
+=======
+                    if (enemy_list[i].getActive())
+                        enemy_list[i].Update(dt);
+>>>>>>> b72c770b0f502116043678a50cd515a6d7766020
                 SensorMove();
             }
             break;
@@ -552,6 +573,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return false;
     }
 
+<<<<<<< HEAD
     public void collisionEnemies()
     {
         for(int i = 0; i < numEnemies; i++)
@@ -566,6 +588,70 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         if(numHealth <= 0)
         {
             //Gameover conditions
+=======
+    public void getindex(final int index, int position)
+    {
+        finger_index[position] = index; // stores which grid node player puts his finger on
+        ++INDEX; // to record where finger lays next
+    }
+
+    public final void getPattern(final int[] index)
+    {
+        int topleft, topright, bottomleft, bottomright;
+        int current = 1;
+        topleft = topright = bottomleft = bottomright = -1;
+        for (int i = 0; i < index.length; ++i)
+        {
+            switch (index[i])
+            {
+                case INDEX_TOP_LEFT:
+                    topleft = current;
+                    break;
+                case INDEX_TOP_RIGHT:
+                    topright = current;
+                    break;
+                case INDEX_BOTTOM_LEFT:
+                    bottomleft = current;
+                    break;
+                case INDEX_BOTTOM_RIGHT:
+                    bottomright = current;
+                    break;
+                default:
+                    break;
+            }
+            ++current;
+        }
+        if (topleft == 1)
+        {
+            if (bottomright == 2) // can be taken away to save cost, this is just for efficency, cuz player confirm plus chop will go through top left or bottom right one
+            {
+                if (bottomleft == 3)
+                    finger_pattern = Enemy.PATTERN.TYPE_DOWN;
+                else if(topright == 3)
+                    finger_pattern = Enemy.PATTERN.TYPE_RIGHT;
+            }
+        }
+        else if (topright == 1)
+        {
+            if (bottomright == 3)
+                finger_pattern = Enemy.PATTERN.TYPE_DOWN;
+            else if(topleft == 3)
+                finger_pattern = Enemy.PATTERN.TYPE_LEFT;
+        }
+        else if (bottomleft == 1)
+        {
+            if (topleft == 3)
+                finger_pattern = Enemy.PATTERN.TYPE_UP;
+            else if (bottomright == 3)
+                finger_pattern = Enemy.PATTERN.TYPE_RIGHT;
+        }
+        else if (bottomright == 1)
+        {
+            if (topright == 3)
+                finger_pattern = Enemy.PATTERN.TYPE_UP;
+            else if (bottomleft == 3)
+                finger_pattern = Enemy.PATTERN.TYPE_LEFT;
+>>>>>>> b72c770b0f502116043678a50cd515a6d7766020
         }
     }
 
@@ -602,6 +688,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             case MotionEvent.ACTION_DOWN:
                 if (currIndex >= 0 && linelist[numLines].isDrawn == false)
                 {
+                    /*The following is for grid system*/
                     gridarray[currIndex].spriteanimation = circle; // init the node sprite to the animated one
                     gridarray[currIndex].active = true; // grid node is now active, if active, do not allow player to reconnect again
                     // Draw the lines
@@ -610,9 +697,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     linelist[numLines].isDraw = true; // Has started drawing is true
                     // store this node
                     prevIndex = currIndex;
+                    /**/
+                    /*The following is for checking of patterns or reading what is drawn on grid*/
+                    if (INDEX < 4)
+                    getindex(currIndex, INDEX); // store finger pos
+                    /**/
                     invalidate();
                 }
-                // Pause game
+                /* Pause game */
                 if (isPaused && CheckCollision(PauseB1.getX(), PauseB1.getY(), PauseB1.getWidth(), PauseB1.getHeight(), X, Y, 0, 0))
                 {
                     isPaused = false;
@@ -624,10 +716,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     isPaused = true;
                     myThread.unPause();
                 }
+                /**/
                 break;
             case MotionEvent.ACTION_MOVE:
+                //if (currIndex < 0)
+                    //break;
                 // if one of the nodes are being touched and it is not the previous one, meaning the finger has moved out of the prev node position, and if line is not drawn
-                if (currIndex >= 0 && currIndex != prevIndex && !linelist[numLines].isDrawn)
+                if (currIndex >= 0 && !linelist[numLines].isDrawn)
                 {
                     if (!gridarray[currIndex].active) // The grid node finger is at has not been activated yet so player is allowed to connect a line to it
                     {
@@ -641,16 +736,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         linelist[numLines].isDrawn = true; // set its used to true, must reset the line when all fingers are up later
                         ++numLines; // Prepare to draw next line
                         prevIndex = currIndex;
+                        if (INDEX < 4) {
+                            getindex(currIndex, INDEX);
+                            getPattern(finger_index);
+                        }
                         invalidate();
                     }
                 }
-                else if (!linelist[numLines].isDrawn)
+                else if (/*prevIndex < 0 &&*/ !linelist[numLines].isDrawn) // If previous position was at a grid
                 {
                     linelist[numLines].setEnd(X, Y); // line end is drawn at wherever finger is, since the finger has gone out of the old node but has not gone to a new node
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 // Check for intersection of lines after finger is up so as to calculate score
+                /*if (currIndex < 0)
+                    break;*/
                for (int i = 0; i < linelist.length; ++i)
                {
                    for (int j = 0; j < linelist.length; ++j)
@@ -667,6 +768,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                             {
                                 currScore++;
                                 toast.show();
+                                if (finger_pattern != Enemy.PATTERN.TYPE_MAX_TYPE)
+                                {
+                                    for (int e = 0; e < enemy_list.length; ++e)
+                                        if (enemy_list[e].type == finger_pattern)
+                                            enemy_list[e].setActive(false);
+                                }
+                                INDEX = 0;
+                                finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
+                                finger_index = new int[4];
                                 //HighScores = 30;
                                 //editScore.putInt("UserScore", HighScores);
                                 //showAlert = true;
