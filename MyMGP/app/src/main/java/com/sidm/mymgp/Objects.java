@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 
 public class Objects {
     protected Bitmap bitmap;
+    private boolean active;
     protected Vector2D position = new Vector2D();
     protected int x;
     protected int y;
@@ -16,7 +17,7 @@ public class Objects {
 
     public Objects()
     {
-
+        active = true;
     }
     public Objects (Bitmap bitmap, int x, int y)
     {
@@ -25,6 +26,7 @@ public class Objects {
         this.y = y;
         position.x = x;
         position.y = y;
+        active = true;
     }
 
     public Bitmap getBitmap() {
@@ -72,6 +74,15 @@ public class Objects {
         this.O_Height = O_Height;
         return O_Height;
     }
+
+    public boolean getActive() {
+        return active;
+    }
+
+    public void setActive(boolean is_active) {
+        active = is_active;
+    }
+
     // takes in delta time
     public void Update(float dt)
     {
