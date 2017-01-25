@@ -56,15 +56,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Create an array of nodes to form a grid
     private Grid[] gridarray = new Grid[numGrids];
     // Create a list of enemies, use a EnemyManager class is needed in future
-<<<<<<< HEAD
     final int numEnemies = 5;
     private Enemy[] enemy_list = new Enemy[numEnemies];
     //Create a computer mainframe
     float comPosX = Screenwidth / 2, comPosY = Screenheight / 2;
     Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
     private MainFrameOBJ mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
-=======
-    private Enemy[] enemy_list = new Enemy[5];
     // Determines which pattern player is going to dish out
     Enemy.PATTERN finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
     // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
@@ -74,7 +71,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
     private int[] finger_index; // Guess you can say this game is best played with the index_finger, badumtss.
     private int INDEX = 0;
->>>>>>> b72c770b0f502116043678a50cd515a6d7766020
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -465,7 +461,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         RenderComputer(canvas);
     }
 
-    //Update method to update the game play
+    //Update method [to update the game play
     public void update(float dt, float fps){ // edit
         FPS = fps;
         switch (GameState) {
@@ -479,14 +475,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 // currentTimeMillis is wall-clock time of machine, time passed since program ran
                 circle.update(System.currentTimeMillis()); // Update sprite animation
                 for (int i = 0; i < enemy_list.length; ++i)
-<<<<<<< HEAD
-                    enemy_list[i].Update(dt);
-                collisionEnemies();
-=======
+                {
                     if (enemy_list[i].getActive())
                         enemy_list[i].Update(dt);
->>>>>>> b72c770b0f502116043678a50cd515a6d7766020
+                }
                 SensorMove();
+                collisionEnemies();
             }
             break;
         }
@@ -573,22 +567,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return false;
     }
 
-<<<<<<< HEAD
-    public void collisionEnemies()
-    {
-        for(int i = 0; i < numEnemies; i++)
-        {
-            float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y)) ;
-            if(Math.sqrt(distance) <= 5)
-            {
+    public void collisionEnemies() {
+        for (int i = 0; i < numEnemies; i++) {
+            float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y));
+            if (Math.sqrt(distance) <= 5) {
                 numHealth -= 1;
                 break;
             }
         }
-        if(numHealth <= 0)
-        {
+        if (numHealth <= 0) {
             //Gameover conditions
-=======
+        }
+    }
     public void getindex(final int index, int position)
     {
         finger_index[position] = index; // stores which grid node player puts his finger on
@@ -651,7 +641,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 finger_pattern = Enemy.PATTERN.TYPE_UP;
             else if (bottomleft == 3)
                 finger_pattern = Enemy.PATTERN.TYPE_LEFT;
->>>>>>> b72c770b0f502116043678a50cd515a6d7766020
         }
     }
 
