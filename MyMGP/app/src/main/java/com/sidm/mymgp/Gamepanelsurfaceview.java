@@ -55,13 +55,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     final int numGrids = 9;
     // Create an array of nodes to form a grid
     private Grid[] gridarray = new Grid[numGrids];
+<<<<<<< HEAD
     // Create a list of enemies, use a EnemyManager class is needed in future
     final int numEnemies = 5;
     private Enemy[] enemy_list = new Enemy[numEnemies];
+=======
+>>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
     //Create a computer mainframe
     float comPosX = Screenwidth / 2, comPosY = Screenheight / 2;
     Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
     private MainFrameOBJ mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
+<<<<<<< HEAD
+=======
+    // Create a list of enemies, use a EnemyManager class is needed in future
+    final int NUM_ENEMIES = 5;
+    private Enemy[] enemy_list = new Enemy[NUM_ENEMIES];
+>>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
     // Determines which pattern player is going to dish out
     Enemy.PATTERN finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
     // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
@@ -71,6 +80,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
     private int[] finger_index; // Guess you can say this game is best played with the index_finger, badumtss.
     private int INDEX = 0;
+<<<<<<< HEAD
+=======
+
+    /*Timer for enemy spawning*/
+    SpawnTimer spawn_timer;
+    /**/
+>>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -202,12 +218,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Initialise enemies
         for (int i = 0; i < enemy_list.length; ++i)
         {
-            enemy_list[i] = new Enemy(enemysprite, enemyorigin.x, enemyorigin.y, NUM_WAYPOINT);
+            enemy_list[i] = new Enemy(enemysprite, enemyorigin.x, enemyorigin.y, NUM_WAYPOINT, false);
             for (int j = 0; j < des.size(); ++j)
                 enemy_list[i].waypoints[j] = des.elementAt(j);
         }
         finger_index = new int[4];
-
+        spawn_timer = new SpawnTimer(0.0f, 5, 0);
         //Load font
         myfont = Typeface.createFromAsset(getContext().getAssets(),"fonts/finalf.ttf");
 
@@ -474,10 +490,24 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
                 // currentTimeMillis is wall-clock time of machine, time passed since program ran
                 circle.update(System.currentTimeMillis()); // Update sprite animation
+<<<<<<< HEAD
                 for (int i = 0; i < enemy_list.length; ++i)
                 {
                     if (enemy_list[i].getActive())
                         enemy_list[i].Update(dt);
+=======
+                collisionEnemies();
+                for (int i = 0; i < enemy_list.length; ++i)
+                    if (enemy_list[i].getActive())
+                        enemy_list[i].Update(dt);
+                spawn_timer.Update(dt);
+                int inactive_index = GetInactiveEnemy(enemy_list);
+                if (inactive_index >= 0) {
+                    if (spawn_timer.can_run) {
+                        enemy_list[inactive_index].setActive(true);
+                        spawn_timer.can_run = false;
+                    }
+>>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
                 }
                 SensorMove();
                 collisionEnemies();
@@ -567,15 +597,29 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return false;
     }
 
+<<<<<<< HEAD
     public void collisionEnemies() {
         for (int i = 0; i < numEnemies; i++) {
             float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y));
             if (Math.sqrt(distance) <= 5) {
+=======
+    public void collisionEnemies()
+    {
+        for(int i = 0; i < NUM_ENEMIES; i++)
+        {
+            float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y)) ;
+            if(Math.sqrt(distance) <= 5)
+            {
+>>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
                 numHealth -= 1;
                 break;
             }
         }
+<<<<<<< HEAD
         if (numHealth <= 0) {
+=======
+        if(numHealth <= 0) {
+>>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
             //Gameover conditions
         }
     }
@@ -642,6 +686,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             else if (bottomleft == 3)
                 finger_pattern = Enemy.PATTERN.TYPE_LEFT;
         }
+    }
+    // Returns an enemy in enemy list that is in-active and ready to spawn, must check for -1(invalid index) to prevent crash
+    public int GetInactiveEnemy(Enemy[] arr)
+    {
+        for (int i = 0; i < arr.length; ++i)
+            if (!arr[i].getActive())
+                return i;
+        return -1; // none are inactive so return invalid index
     }
 
     public void startVibrate()

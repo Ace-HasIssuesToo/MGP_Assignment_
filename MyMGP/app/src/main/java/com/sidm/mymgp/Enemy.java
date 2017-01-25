@@ -9,7 +9,7 @@ import android.util.Log; // remove when used finished
  */
 
 public class Enemy extends Objects {
-    public Enemy(Bitmap bitmap_, float x_, float y_, int num_waypoints_)
+    public Enemy(Bitmap bitmap_, float x_, float y_, int num_waypoints_, boolean active_)
     {
         bitmap = bitmap_;
         position.x = x_;
@@ -23,6 +23,7 @@ public class Enemy extends Objects {
             waypoints[i] = Vector2D.Zero;
         }
         waypoint_index = 0;
+        setActive(active_);
     }
     private int MAX_WAYPOINTS;
     // current waypoint enemy is at
