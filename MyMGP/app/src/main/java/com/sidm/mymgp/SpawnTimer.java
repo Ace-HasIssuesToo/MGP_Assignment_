@@ -19,8 +19,10 @@ public class SpawnTimer {
     public float original_time;
     public boolean can_run;
 
-    public void Update(float dt)
+    public void Update(float dt, float new_delay)
     {
+        if (new_delay != -1)
+            delay = new_delay;
         if (timer < 0)
             return;
         if (timer >= period) {

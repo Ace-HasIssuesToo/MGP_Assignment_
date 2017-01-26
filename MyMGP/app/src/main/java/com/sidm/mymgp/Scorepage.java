@@ -4,7 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -22,6 +26,15 @@ public class Scorepage extends Activity implements View.OnClickListener {
 
     SharedPreferences SharedPrefName;
     SharedPreferences SharedPrefScore;
+    // Define Screen width and Screen height as integer
+    int Screenwidth, Screenheight;
+    // Image for star rating
+    private Bitmap rating;
+    // Amount of rating
+    int numRate;
+    // Canvas
+    private Bitmap canvasMap;
+    Canvas canvas = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,18 +44,25 @@ public class Scorepage extends Activity implements View.OnClickListener {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); // hide top bar
         setContentView(R.layout.scorepage);
 
+        // Set information to get screen size, DisplayMetrics describe general information about display, size, density, and font scaling.
+        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+        Screenwidth = metrics.widthPixels;
+        Screenheight = metrics.heightPixels;
+
         btn_back = (Button)findViewById(R.id.btn_back);
         btn_back.setOnClickListener(this); // btn is linked to this button id and when i press it, go to this
         TextView scoreText;
         scoreText = (TextView) findViewById(R.id.scoreText);
-String Playername;
-        int Highscores;
+        String Playername;
         SharedPrefName = getSharedPreferences("PlayerUSERID", Context.MODE_PRIVATE);
         Playername = SharedPrefName.getString("PlayerUSERID", "DEFAULT");
         SharedPrefScore = getSharedPreferences("UserScore", Context.MODE_PRIVATE);
-        Highscores = SharedPrefScore.getInt("UserScore", 0);
+        numRate = SharedPrefScore.getInt("UserScore", 0);
         // Printing to score page view
-        scoreText.setText(String.format(Playername + Highscores));
+        scoreText.setText(String.format(Playername + " " + numRate));
+        rating = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.star), Screenwidth / 10, Screenwidth / 10, true);
+        canvasMap = Bitmap.createBitmap(Screenwidth, Screenheight, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(canvasMap);
     }
 
     public void onClick(View v)
@@ -54,6 +74,12 @@ String Playername;
         }
 
         startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        RenderRating(canvas);
     }
 
     @Override
@@ -71,5 +97,26 @@ String Playername;
     protected void onStop()
     {
         super.onStop();
+    }
+
+    private void RenderRating(Canvas canvas)
+    {
+        switch(numRate) {
+            case 3:
+                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
+                canvas.drawBitmap(rating, 78, Screenheight - 700, null);
+                canvas.drawBitmap(rating, 128, Screenheight - 700, null);
+                break;
+            case 2:
+                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
+                canvas.drawBitmap(rating, 78, Screenheight - 700, null);
+                break;
+            case 1:
+                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
+                break;
+            default:
+
+                break;
+        }
     }
 }
