@@ -56,21 +56,20 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     final int numGrids = 9;
     // Create an array of nodes to form a grid
     private Grid[] gridarray = new Grid[numGrids];
-    // Create a list of enemies, use a EnemyManager class is needed in future
-    final int numEnemies = 5;
-    private Enemy[] enemy_list = new Enemy[numEnemies];
     //Create a computer mainframe
     float comPosX = Screenwidth / 2, comPosY = Screenheight / 2;
     Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
     private MainFrameOBJ mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
-    //Create a computer mainframe
-    private MainFrameOBJ mainframe;
     // Create a list of enemies, use a EnemyManager class is needed in future
     final int NUM_ENEMIES = 5;
     Vector2D enemyorigin;
     final int NUM_WAYPOINT = 25; // How many waypoints are placed for enemy to follow
     Vector<Vector2D> des;
     private Enemy[] enemy_list = new Enemy[NUM_ENEMIES];
+    final int NUM_ALLIES = 5;
+    Vector2D allyOrigin;
+    private Ally[] ally_list = new Ally[NUM_ALLIES];
+
     // Determines which pattern player is going to dish out
     Enemy.PATTERN finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
     // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
@@ -243,6 +242,28 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
         finger_index = new int[4];
         spawn_timer = new SpawnTimer(0.0f, 5, 0);
+
+        allyOrigin = new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f); // starting position
+        for (int i = 0; i < enemy_list.length; ++i)
+        {
+            ally_list[i] = new Ally(allyOrigin.x, allyOrigin.y, NUM_WAYPOINT, false);
+            for (int j = 0; j < des.size(); ++j)
+                ally_list[i].waypoints[j] = des.elementAt(j);
+            rand_i = (int)(Math.random() * 10);
+            if (rand_i % 2 == 0 && rand_i < 5)
+                ally_list[i].type = Ally.PATTERN.TYPE_1;
+            else if (rand_i % 2 != 0 && rand_i < 5)
+                ally_list[i].type = Ally.PATTERN.TYPE_2;
+            else
+                ally_list[i].type = Ally.PATTERN.TYPE_3;
+
+            if (ally_list[i].type == Ally.PATTERN.TYPE_1)
+                ally_list[i].bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green1)), Screenwidth / 10, Screenwidth / 10, true);
+            else if (ally_list[i].type == Ally.PATTERN.TYPE_2)
+                ally_list[i].bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green2)), Screenwidth / 10, Screenwidth / 10, true);
+            else
+                ally_list[i].bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green3)), Screenwidth / 10, Screenwidth / 10, true);
+        }
 
         Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
         mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
@@ -467,6 +488,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 canvas.drawBitmap(enemy_list[i].getBitmap(), enemy_list[i].getPos().x, enemy_list[i].getPos().y, null);
     }
 
+    // Render allies at their position with no paint
+    public void RenderAlly(Canvas canvas)
+    {
+        for (int i = 0; i < ally_list.length; ++i)
+            if (ally_list[i] != null && ally_list[i].getActive())
+                canvas.drawBitmap(ally_list[i].getBitmap(), ally_list[i].getPos().x, ally_list[i].getPos().y, null);
+    }
+
     public void RenderComputer(Canvas canvas)
     {
         if (mainframe != null && mainframe.getActive())
@@ -517,6 +546,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         RenderHealthbar(canvas);
         RenderPause(canvas);
         RenderEnemy(canvas);
+        RenderAlly(canvas);
         RenderComputer(canvas);
         RenderObjects(canvas);
     }
@@ -549,11 +579,31 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     SensorMove();
                     collisionEnemies();
                 }
+                for(int i = 0; i < ally_list.length; ++i)
+                {
+                    if (ally_list[i].getActive())
+                        ally_list[i].Update(dt);
+                    int inactive_index2 = GetInactiveAlly(ally_list);
+                    if (inactive_index2 >= 0) {
+                        if (spawn_timer.can_run) {
+                            ally_list[inactive_index2].setActive(true);
+                            spawn_timer.can_run = false;
+                        }
+                    }
+                    collisionAllies();
+                }
                 for (int i = 0; i < enemy_list.length; ++i)
                     if (enemy_list[i] != null && enemy_list[i].getActive())
                         enemy_list[i].Update(dt);
                     else if (enemy_list[i] == null)
                         enemy_list[i] = (Enemy)InitialiseEnemy();
+
+                for (int i = 0; i < ally_list.length; ++i)
+                    if (ally_list[i] != null && ally_list[i].getActive())
+                        ally_list[i].Update(dt);
+                    else if (ally_list[i] == null)
+                        ally_list[i] = (Ally) InitialiseAlly();
+
                 spawn_timer.Update(dt);
                 int inactive_index = GetInactiveEnemy(enemy_list);
                 if (inactive_index >= 0) {
@@ -651,7 +701,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     }
 
     public void collisionEnemies() {
-        for (int i = 0; i < numEnemies; i++) {
+        for (int i = 0; i < NUM_ENEMIES; i++) {
             float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y));
             if (Math.sqrt(distance) <= 5)
             {
@@ -664,6 +714,35 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             //Gameover conditions
         }
     }
+
+    public void collisionAllies() {
+        for (int i = 0; i < NUM_ALLIES; i++) {
+            float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y));
+            if (Math.sqrt(distance) <= 5)
+            {
+                break;
+            }
+        }
+    }
+
+    // Check if kill line has been crossed by enemy
+    public boolean CheckCrossedKillLine(Vector2D pos, final int orientation, float dt) // Pos is the enemy pos, orientation is the way the enemy crosses the line, whether its higher, lower, further right, etc
+    {
+        //if (dt > 0 && dt < orientation + 1) {
+        switch (orientation) {
+            case 0:
+                float del_x = pos.x + dt;
+                float negdel_x = pos.x - dt;
+                float offsetY = kill_line.getBitmap().getHeight() * 0.5f * dt;
+                float offsetX = kill_line.getBitmap().getWidth() * 0.5f * dt;
+                if (/*((pos.x >= (kill_line.x - offsetX)) && (pos.x <= (kill_line.x + offsetX))) &&*/ pos.y <= kill_line.getPos().y + kill_line.getBitmap().getHeight() * 0.5f)
+                    return true;
+                break;
+        }
+        //}
+        return false;
+    }
+
     public void getindex(final int index, int position)
     {
         finger_index[position] = index; // stores which grid node player puts his finger on
@@ -760,6 +839,35 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         else
             enemy.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.patternright)), Screenwidth / 10, Screenwidth / 10, true);
         return enemy;
+    }
+    public int GetInactiveAlly(Ally[] arr)
+    {
+        for (int i = 0; i < arr.length; ++i)
+            if (arr[i] != null && !arr[i].getActive())
+                return i;
+        return -1; // none are inactive so return invalid index
+    }
+    private Objects InitialiseAlly()
+    {
+        int rand_i = 0;
+        Ally ally = new Ally(allyOrigin.x, allyOrigin.y, NUM_WAYPOINT, false);
+        for (int j = 0; j < des.size(); ++j)
+            ally.waypoints[j] = des.elementAt(j);
+        rand_i = (int) (Math.random() * 10);
+        if (rand_i % 2 == 0 && rand_i < 5)
+            ally.type = Ally.PATTERN.TYPE_1;
+        else if (rand_i % 2 != 0 && rand_i < 5)
+            ally.type = Ally.PATTERN.TYPE_2;
+        else
+            ally.type = Ally.PATTERN.TYPE_3;
+
+        if (ally.type == Ally.PATTERN.TYPE_1)
+            ally.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green1)), Screenwidth / 10, Screenwidth / 10, true);
+        else if (ally.type == Ally.PATTERN.TYPE_2)
+            ally.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green2)), Screenwidth / 10, Screenwidth / 10, true);
+        else
+            ally.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green3)), Screenwidth / 10, Screenwidth / 10, true);
+        return ally;
     }
 
     public void startVibrate()
@@ -873,7 +981,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                             temp4 = new Vector2D(linelist[j].getEndX(),linelist[j].getEndY());
                             if(intersectCheck.algebraNonsense())
                             {
-                                currScore++;
                                 toast.show();
                                 if (finger_pattern != Enemy.PATTERN.TYPE_MAX_TYPE)
                                 {
@@ -882,6 +989,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                                             if (CheckCrossedKillLine(enemy_list[e].position, 0, deltaTime))
                                                 enemy_list[e] = null;
                                         }
+                                    currScore++;
                                 }
                                 INDEX = 0;
                                 finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
