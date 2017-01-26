@@ -55,22 +55,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     final int numGrids = 9;
     // Create an array of nodes to form a grid
     private Grid[] gridarray = new Grid[numGrids];
-<<<<<<< HEAD
     // Create a list of enemies, use a EnemyManager class is needed in future
     final int numEnemies = 5;
     private Enemy[] enemy_list = new Enemy[numEnemies];
-=======
->>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
     //Create a computer mainframe
     float comPosX = Screenwidth / 2, comPosY = Screenheight / 2;
     Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
     private MainFrameOBJ mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
-<<<<<<< HEAD
-=======
-    // Create a list of enemies, use a EnemyManager class is needed in future
-    final int NUM_ENEMIES = 5;
-    private Enemy[] enemy_list = new Enemy[NUM_ENEMIES];
->>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
     // Determines which pattern player is going to dish out
     Enemy.PATTERN finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
     // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
@@ -80,13 +71,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
     private int[] finger_index; // Guess you can say this game is best played with the index_finger, badumtss.
     private int INDEX = 0;
-<<<<<<< HEAD
-=======
-
     /*Timer for enemy spawning*/
     SpawnTimer spawn_timer;
     /**/
->>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -265,7 +252,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         getHolder().addCallback(this);
         sensor = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
         sensor.registerListener(this, sensor.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_NORMAL);
-// Welcome toast message
+        // Welcome toast message
         Toastmessage(context);
         // Alert dialog
         AlertObj = new Alert(this);
@@ -490,27 +477,21 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
                 // currentTimeMillis is wall-clock time of machine, time passed since program ran
                 circle.update(System.currentTimeMillis()); // Update sprite animation
-<<<<<<< HEAD
                 for (int i = 0; i < enemy_list.length; ++i)
                 {
                     if (enemy_list[i].getActive())
                         enemy_list[i].Update(dt);
-=======
-                collisionEnemies();
-                for (int i = 0; i < enemy_list.length; ++i)
-                    if (enemy_list[i].getActive())
-                        enemy_list[i].Update(dt);
-                spawn_timer.Update(dt);
-                int inactive_index = GetInactiveEnemy(enemy_list);
-                if (inactive_index >= 0) {
-                    if (spawn_timer.can_run) {
-                        enemy_list[inactive_index].setActive(true);
-                        spawn_timer.can_run = false;
+                    spawn_timer.Update(dt);
+                    int inactive_index = GetInactiveEnemy(enemy_list);
+                    if (inactive_index >= 0) {
+                        if (spawn_timer.can_run) {
+                            enemy_list[inactive_index].setActive(true);
+                            spawn_timer.can_run = false;
+                        }
                     }
->>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
+                    SensorMove();
+                    collisionEnemies();
                 }
-                SensorMove();
-                collisionEnemies();
             }
             break;
         }
@@ -597,29 +578,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return false;
     }
 
-<<<<<<< HEAD
     public void collisionEnemies() {
         for (int i = 0; i < numEnemies; i++) {
             float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y));
-            if (Math.sqrt(distance) <= 5) {
-=======
-    public void collisionEnemies()
-    {
-        for(int i = 0; i < NUM_ENEMIES; i++)
-        {
-            float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y)) ;
-            if(Math.sqrt(distance) <= 5)
+            if (Math.sqrt(distance) <= 5)
             {
->>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
                 numHealth -= 1;
                 break;
             }
         }
-<<<<<<< HEAD
-        if (numHealth <= 0) {
-=======
-        if(numHealth <= 0) {
->>>>>>> 3f9dab10011305a12bc5db6ef53760ef54688439
+        if(numHealth <= 0)
+        {
             //Gameover conditions
         }
     }
