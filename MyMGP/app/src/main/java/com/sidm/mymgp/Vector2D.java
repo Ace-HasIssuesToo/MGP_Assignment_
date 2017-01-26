@@ -42,11 +42,24 @@ public class Vector2D {
 
     }
 
+    public float LengthSquared(){
+        return (float)(x * x + y * y);
+    }
+
+    public Vector2D Minus(Vector2D other){
+        return new Vector2D(this.x - other.x, this.y - other.y);
+    }
+
     public Vector2D Normalize(){
 
         float d = Length();
         return new Vector2D((x / d), (y / d));
 
+    }
+
+    public void Set(float x_, float y_)
+    {
+        x = x_; y = y_;
     }
 
     public static final Vector2D Zero = new Vector2D(0, 0);

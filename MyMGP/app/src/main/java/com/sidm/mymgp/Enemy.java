@@ -9,9 +9,8 @@ import android.util.Log; // remove when used finished
  */
 
 public class Enemy extends Objects {
-    public Enemy(Bitmap bitmap_, float x_, float y_, int num_waypoints_, boolean active_)
+    public Enemy(float x_, float y_, int num_waypoints_, boolean active_)
     {
-        bitmap = bitmap_;
         position.x = x_;
         position.y = y_;
         MAX_WAYPOINTS = num_waypoints_;
