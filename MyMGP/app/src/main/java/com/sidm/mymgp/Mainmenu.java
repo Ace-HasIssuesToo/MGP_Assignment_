@@ -40,7 +40,7 @@ public class Mainmenu extends Activity implements OnClickListener {
         Intent intent = new Intent();
         if (v == btn_start)
         {
-            intent.setClass(this, Gamepage.class);
+            intent.setClass(this, TutorialPage.class);
         }
         else if (v == btn_help)
         {

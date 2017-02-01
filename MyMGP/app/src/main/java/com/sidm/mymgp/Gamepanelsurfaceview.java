@@ -52,27 +52,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     int Screenwidth, Screenheight;
     // Variables for defining background start and end point
     private short bgX = 0, bgY = 0;
-    // Number of nodes in the grid
-    final int numGrids = 9;
+    // The level manager
+    LevelManager lvl_manager;
     // Create an array of nodes to form a grid
-    private Grid[] gridarray = new Grid[numGrids];
+    private Grid[] gridarray;
     //Create a computer mainframe
     private MainFrameOBJ mainframe;
-    // Create a list of enemies, use a EnemyManager class is needed in future
-    final int NUM_ENEMIES = 5;
-    Vector2D enemyorigin;
     final int NUM_WAYPOINT = 25; // How many waypoints are placed for enemy to follow
-    Vector<Vector2D> des;
-    private Enemy[] enemy_list = new Enemy[NUM_ENEMIES];
-    // Determines which pattern player is going to dish out
-    Enemy.PATTERN finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
-    // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
-    private static final int INDEX_TOP_LEFT = 0;
-    private static final int INDEX_TOP_RIGHT = 1;
-    private static final int INDEX_BOTTOM_LEFT = 2;
-    private static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
-    private int[] finger_index; // Guess you can say this game is best played with the index_finger, badumtss.
-    private int INDEX = 0;
+    private Enemy[] enemy_list;
 
     /*Timer for enemy spawning*/
     SpawnTimer spawn_timer;
@@ -81,6 +68,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public Objects[] wall_list;
     public Objects kill_line;
     /**/
+
+    // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
+    public static final int INDEX_TOP_LEFT = 0;
+    public static final int INDEX_TOP_RIGHT = 1;
+    public static final int INDEX_BOTTOM_LEFT = 2;
+    public static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -96,7 +89,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private Spriteanimation circlePressed;
 
     // Creating an array of lines for connecting the grid
-    private Fingerline[] linelist = new Fingerline[numGrids + 1];
+    private Fingerline[] linelist;
     int numLines = 0;
     int currIndex = 0;
     int prevIndex = 0;
@@ -129,6 +122,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     int toastTime;
     // Pop up message
     Toast toast;
+    CharSequence winText;
+    int winToastTime;
+    Toast winToast; // Guess you could say windows is toast. badumtss
     // Timer for how long before change scene
     SpawnTimer time_before_end;
     // Alert dialog
@@ -160,7 +156,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public Gamepanelsurfaceview (Context context, Activity activity){
         // Context is the current state of the application/object
         super(context);
-
         soundManager = new SoundManager(context);
         // Initiate vibrator
         m_vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
@@ -168,12 +163,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         Screenwidth = metrics.widthPixels;
         Screenheight = metrics.heightPixels;
+        lvl_manager = new LevelManager();
+        lvl_manager.Init(9, new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f), 5, 100.f);
         // getResources() returns you the app res folder, we then decode the image using its R.id
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.matrix);
         ball = BitmapFactory.decodeResource(getResources(), R.drawable.dragonballpixel2);
         scalebg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);// For bigger/smaller version of bg
         circlePressed = new Spriteanimation(BitmapFactory.decodeResource(getResources(),R.drawable.techcirclespritesheet), 288, 96, 3, 3);
         // for grid circle and line
+        gridarray = new Grid[lvl_manager.m_numNode];
         for (int i = 0; i < gridarray.length; ++i)
         {
             gridarray[i] = new Grid();
@@ -205,17 +203,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // The computer mainframe position, which is also the "final destination"(badumtss) of enemies
         float comPosX = Screenwidth * 0.8f, comPosY = Screenheight * 0.2f;
         // Initialise enemies
-        des = new Vector<>(); // Vector of waypoints
-        des.add(new Vector2D(Screenwidth * 0.4f, Screenheight * 0.6f));
-        des.add(new Vector2D(Screenwidth * 0.4f, comPosY));
-        des.add(new Vector2D(comPosX, comPosY));
-        enemyorigin = new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f); // starting position
+        lvl_manager.m_des.add(new Vector2D(Screenwidth * 0.4f, Screenheight * 0.6f));
+        lvl_manager.m_des.add(new Vector2D(Screenwidth * 0.4f, comPosY));
+        lvl_manager.m_des.add(new Vector2D(comPosX, comPosY));
+        enemy_list = new Enemy[lvl_manager.m_numEnemies];
         int rand_i = 0;
         for (int i = 0; i < enemy_list.length; ++i)
         {
-            enemy_list[i] = new Enemy(enemyorigin.x, enemyorigin.y, NUM_WAYPOINT, false);
-            for (int j = 0; j < des.size(); ++j)
-                enemy_list[i].waypoints[j] = des.elementAt(j);
+            enemy_list[i] = new Enemy(lvl_manager.m_enemyStartPos.x, lvl_manager.m_enemyStartPos.y, NUM_WAYPOINT, false, lvl_manager.m_enemySpeed);
+            for (int j = 0; j < lvl_manager.m_des.size(); ++j)
+                enemy_list[i].waypoints[j] = lvl_manager.m_des.elementAt(j);
             rand_i = (int)(Math.random() * 10);
             if (rand_i % 2 == 0 && rand_i < 5)
                 enemy_list[i].type = Enemy.PATTERN.TYPE_DOWN;
@@ -235,7 +232,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             else
                 enemy_list[i].bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.patternright)), Screenwidth / 10, Screenwidth / 10, true);
         }
-        finger_index = new int[4];
+        linelist = new Fingerline[lvl_manager.m_numNode + 1];
+        lvl_manager.m_fingerindex = new int[4];
         spawn_timer = new SpawnTimer(0.0f, 5, 0);
         time_before_end = new SpawnTimer(0.0f, 2, 0.0f);
         Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
@@ -249,7 +247,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             wall_list[i].position.y = Screenheight * 0.5f - (Screenheight / 10) * i;
         }
         kill_line = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.laser)), (int)(Screenwidth * 0.6f - Screenwidth * 0.2f), Screenheight / 2, true), 5, 5);
-        kill_line.position.Set(Screenwidth * 0.2f + (float)(Screenwidth / 10 * 0.5), des.elementAt(1).y  + 50.f); // Position is where the wall are plus the wall's sprite width, so the laser starts from the middle of the block
+        kill_line.position.Set(Screenwidth * 0.2f + (float)(Screenwidth / 10 * 0.5), lvl_manager.m_des.elementAt(1).y  + 50.f); // Position is where the wall are plus the wall's sprite width, so the laser starts from the middle of the block
 
         //Load font
         myfont = Typeface.createFromAsset(getContext().getAssets(),"fonts/finalf.ttf");
@@ -536,6 +534,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         enemy_list[i] = (Enemy)InitialiseEnemy();
                 int randomNum = (int)(Math.random() * 10);
                 spawn_timer.Update(dt, randomNum);
+                // Object Pooling
+                /*
                 int inactive_index = GetInactiveEnemy(enemy_list);
                 if (inactive_index >= 0) {
                     if (spawn_timer.can_run) {
@@ -543,6 +543,31 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         spawn_timer.can_run = false;
                     }
                 }
+                /**/
+                /* Making them spawn according to seconds*/
+                int inactive_index = lvl_manager.m_enemySpawnIndex;
+                if (inactive_index >= 0) {
+                    if (spawn_timer.can_run) {
+                        enemy_list[inactive_index].setActive(true);
+                        spawn_timer.can_run = false;
+                        --lvl_manager.m_enemySpawnIndex;
+                    }
+                }
+                /**/
+                /* End game if condition of all enemies defeated is satisfied */
+                if (lvl_manager.m_numEnemies == 0) {
+                    b_EndLevel = true;
+                    winToast.show();
+                }
+
+                if (b_EndLevel) {
+                    time_before_end.Update(dt, -1);
+                    if (time_before_end.can_run) {
+                        GameState = 1;
+                        time_before_end.can_run = false;
+                    }
+                }
+                /**/
                 SensorMove();
                 deltaTime = dt;
             }
@@ -706,8 +731,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     public void getindex(final int index, int position)
     {
-        finger_index[position] = index; // stores which grid node player puts his finger on
-        ++INDEX; // to record where finger lays next
+        lvl_manager.m_fingerindex[position] = index; // stores which grid node player puts his finger on
+        ++lvl_manager.INDEX; // to record where finger lays next
     }
 
     public final void getPattern(final int[] index)
@@ -741,31 +766,31 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             if (bottomright == 2) // can be taken away to save cost, this is just for efficency, cuz player confirm plus chop will go through top left or bottom right one
             {
                 if (bottomleft == 3)
-                    finger_pattern = Enemy.PATTERN.TYPE_DOWN;
+                    lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_DOWN;
                 else if(topright == 3)
-                    finger_pattern = Enemy.PATTERN.TYPE_RIGHT;
+                    lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_RIGHT;
             }
         }
         else if (topright == 1)
         {
             if (bottomright == 3)
-                finger_pattern = Enemy.PATTERN.TYPE_DOWN;
+                lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_DOWN;
             else if(topleft == 3)
-                finger_pattern = Enemy.PATTERN.TYPE_LEFT;
+                lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_LEFT;
         }
         else if (bottomleft == 1)
         {
             if (topleft == 3)
-                finger_pattern = Enemy.PATTERN.TYPE_UP;
+                lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_UP;
             else if (bottomright == 3)
-                finger_pattern = Enemy.PATTERN.TYPE_RIGHT;
+                lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_RIGHT;
         }
         else if (bottomright == 1)
         {
             if (topright == 3)
-                finger_pattern = Enemy.PATTERN.TYPE_UP;
+                lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_UP;
             else if (bottomleft == 3)
-                finger_pattern = Enemy.PATTERN.TYPE_LEFT;
+                lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_LEFT;
         }
     }
     // Returns an enemy in enemy list that is in-active and ready to spawn, must check for -1(invalid index) to prevent crash
@@ -778,9 +803,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     }
     private Objects InitialiseEnemy() {
         int rand_i = 0;
-        Enemy enemy = new Enemy(enemyorigin.x, enemyorigin.y, NUM_WAYPOINT, false);
-        for (int j = 0; j < des.size(); ++j)
-            enemy.waypoints[j] = des.elementAt(j);
+        Enemy enemy = new Enemy(lvl_manager.m_enemyStartPos.x, lvl_manager.m_enemyStartPos.y, NUM_WAYPOINT, false, lvl_manager.m_enemySpeed);
+        for (int j = 0; j < lvl_manager.m_des.size(); ++j)
+            enemy.waypoints[j] = lvl_manager.m_des.elementAt(j);
         rand_i = (int) (Math.random() * 10);
         if (rand_i % 2 == 0 && rand_i < 5)
             enemy.type = Enemy.PATTERN.TYPE_DOWN;
@@ -820,6 +845,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         text = "Operation failed! Systemx32 has crashed.";
         toastTime = Toast.LENGTH_SHORT;
         toast = Toast.makeText(context, text, toastTime);
+
+        winText = "You Win! Going to highscore page.";
+        winToastTime = winToast.LENGTH_SHORT;
+        winToast = Toast.makeText(context, winText, winToastTime);
     }
 
     @Override
@@ -846,8 +875,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     prevIndex = currIndex;
                     /**/
                     /*The following is for checking of patterns or reading what is drawn on grid*/
-                    if (INDEX < 4)
-                    getindex(currIndex, INDEX); // store finger pos
+                    if (lvl_manager.INDEX < 4)
+                    getindex(currIndex, lvl_manager.INDEX); // store finger pos
                     /**/
                     invalidate();
                 }
@@ -883,9 +912,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         linelist[numLines].isDrawn = true; // set its used to true, must reset the line when all fingers are up later
                         ++numLines; // Prepare to draw next line
                         prevIndex = currIndex;
-                        if (INDEX < 4) {
-                            getindex(currIndex, INDEX);
-                            getPattern(finger_index);
+                        if (lvl_manager.INDEX < 4) {
+                            getindex(currIndex, lvl_manager.INDEX);
+                            getPattern(lvl_manager.m_fingerindex);
                         }
                         invalidate();
                     }
@@ -899,6 +928,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 // Check for intersection of lines after finger is up so as to calculate score
                 /*if (currIndex < 0)
                     break;*/
+                int num_destroyed = 0;
                for (int i = 0; i < linelist.length; ++i)
                {
                    for (int j = 0; j < linelist.length; ++j)
@@ -913,20 +943,24 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                             temp4 = new Vector2D(linelist[j].getEndX(),linelist[j].getEndY());
                             if(intersectCheck.algebraNonsense())
                             {
-                                if (finger_pattern != Enemy.PATTERN.TYPE_MAX_TYPE)
+                                if (lvl_manager.m_fingerpattern != Enemy.PATTERN.TYPE_MAX_TYPE)
                                 {
                                     for (int e = 0; e < enemy_list.length; ++e)
-                                        if (enemy_list[e] != null && enemy_list[e].getActive() && enemy_list[e].type == finger_pattern) {
+                                        if (enemy_list[e] != null && enemy_list[e].getActive() && enemy_list[e].type == lvl_manager.m_fingerpattern) {
                                             if (CheckCrossedKillLine(enemy_list[e].position, 0, deltaTime))
                                             {
                                                 enemy_list[e] = null;
+                                                stat_currScore += lvl_manager.score_multiplier * num_destroyed;
+                                                ++lvl_manager.score_multiplier;
+                                                --lvl_manager.m_numEnemies;
                                                 ++stat_currScore;
                                             }
                                         }
                                 }
-                                INDEX = 0;
-                                finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
-                                finger_index = new int[4];
+                                lvl_manager.score_multiplier = 1;
+                                lvl_manager.INDEX = 0;
+                                lvl_manager.m_fingerpattern = Enemy.PATTERN.TYPE_MAX_TYPE;
+                                lvl_manager.m_fingerindex = new int[4];
                             }
                         }
                        else

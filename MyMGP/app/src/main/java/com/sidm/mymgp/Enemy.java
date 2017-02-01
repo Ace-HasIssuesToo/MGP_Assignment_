@@ -9,7 +9,7 @@ import android.util.Log; // remove when used finished
  */
 
 public class Enemy extends Objects {
-    public Enemy(float x_, float y_, int num_waypoints_, boolean active_)
+    public Enemy(float x_, float y_, int num_waypoints_, boolean active_, float move_speed_)
     {
         position.x = x_;
         position.y = y_;
@@ -23,6 +23,7 @@ public class Enemy extends Objects {
         }
         waypoint_index = 0;
         setActive(active_);
+        move_speed = move_speed_;
     }
     private int MAX_WAYPOINTS;
     // current waypoint enemy is at
@@ -47,6 +48,7 @@ public class Enemy extends Objects {
 
     public STATE state;
     public PATTERN type;
+    public float move_speed;
 
     @Override
     public void Update(float dt)
@@ -56,7 +58,7 @@ public class Enemy extends Objects {
         {
             case STATE_MOVE:
                 // Speed of enemy
-                float speed = 200;
+                float speed = move_speed;
                 // Delta time speed of enemy, frame rate independant
                 float delta_speed = speed * dt;
                 if (!position.equals(waypoints[waypoint_index], delta_speed)) // Not at destination
