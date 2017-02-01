@@ -79,6 +79,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
     private int[] finger_index; // Guess you can say this game is best played with the index_finger, badumtss.
     private int INDEX = 0;
+
     /*Timer for enemy spawning*/
     SpawnTimer spawn_timer;
     /**/
@@ -105,19 +106,20 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     int numLines = 0;
     int currIndex = 0;
     int prevIndex = 0;
-    // var for score
-    int totalScore;
-    int currScore;
+    /*Scoring*/
+    static int stat_totalScore;
+    static int stat_currScore;
+    /**/
+    /*Scene switching*/
+    static boolean b_EndLevel;
+    /**/
     // Variables for FPS
     public float FPS;
     float deltaTime;
-    long dt;
     //long dt;
     // Checker class for intersection between lines
     intersection intersectCheck;
     Typeface myfont;
-    // Image for star rating
-    private Bitmap rating;
     // Amount of rating
     int numRate;
     // How much health is left
@@ -133,9 +135,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     int toastTime;
     // Pop up message
     Toast toast;
-
+    // Timer for how long before change scene
+    SpawnTimer time_before_end;
     // Alert dialog
-    public boolean showAlert = false;
+    public boolean showAlert = true;
     AlertDialog.Builder alert = null;
     private Alert AlertObj; // based on Alert.java
     // Settings meant to be shared across all files
@@ -146,8 +149,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     SharedPreferences.Editor editScore;
     // Names to be shared
     String Playername;
-    // Highscore to be shared
-    int HighScores;
 
     private SensorManager sensor;
     float[] SensorVar = new float[3];
@@ -242,7 +243,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
         finger_index = new int[4];
         spawn_timer = new SpawnTimer(0.0f, 5, 0);
-
+ time_before_end = new SpawnTimer(0.0f, 2, 0.0f);
         allyOrigin = new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f); // starting position
         for (int i = 0; i < enemy_list.length; ++i)
         {
@@ -286,7 +287,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             linelist[i] = new Fingerline();
         }
 
-        totalScore = 0; currScore = 0;
+        stat_totalScore = 0; stat_currScore = 0;
         numRate = 3;
         numHealth = 100;
 //        int posx = 2;
@@ -304,7 +305,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 //            gridarray[i].y = Screenheight * 0.5f;
 //        }
         // filter param is to go through bilinear interpolation for getting a high quality image after scaling up
-        rating = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.star), Screenwidth / 10, Screenwidth / 10, true);
         PauseB1 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
         PauseB2 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
         myThread = new Gamethread(getHolder(), this);
@@ -319,7 +319,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         getHolder().addCallback(this);
         sensor = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
         sensor.registerListener(this, sensor.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_NORMAL);
-        // Welcome toast message
+// Welcome toast message
         Toastmessage(context);
         // Alert dialog
         AlertObj = new Alert(this);
@@ -352,14 +352,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         });
 
         // shared preferences
+        // create a shared file, is shared among all callers of getSharedPreferences, MODE_PRIVATE is default operation
         SharedPrefName = getContext().getSharedPreferences("PlayerUSERID", Context.MODE_PRIVATE);
+        // Allows modification to the SharedPreferences object
         editName = SharedPrefName.edit();
         Playername = "Player1";
+        // Get the value stored by SharedPreferences, if nothing, return DEFAULT
         Playername = SharedPrefName.getString("PlayerUSERID", "DEFAULT");
         SharedPrefScore = getContext().getSharedPreferences("UserScore", Context.MODE_PRIVATE);
         editScore = SharedPrefScore.edit();
-        HighScores = 0;
-        HighScores = SharedPrefScore.getInt("UserScore", 0);
+        numRate = 0;
+        numRate = SharedPrefScore.getInt("UserScore", 0);
+        b_EndLevel = false;
     }
 
     //must implement inherited abstract methods
@@ -439,27 +443,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
     }
 
-    private void RenderRating(Canvas canvas)
-    {
-        switch(numRate) {
-            case 3:
-                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
-                canvas.drawBitmap(rating, 78, Screenheight - 700, null);
-                canvas.drawBitmap(rating, 128, Screenheight - 700, null);
-                break;
-            case 2:
-                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
-                canvas.drawBitmap(rating, 78, Screenheight - 700, null);
-                break;
-            case 1:
-                canvas.drawBitmap(rating, 28, Screenheight - 700, null);
-                break;
-            default:
-
-                break;
-        }
-    }
-
     private void RenderHealthbar(Canvas canvas)
     {
         Paint paint = new Paint();
@@ -504,11 +487,29 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     public void RenderObjects(Canvas canvas)
     {
+        if (kill_line != null && kill_line.getActive())
+            canvas.drawBitmap(kill_line.getBitmap(), kill_line.getPos().x, kill_line.getPos().y, null);
         for (int i = 0; i < wall_list.length; ++i)
             if (wall_list[i] != null && wall_list[i].getActive())
                 canvas.drawBitmap(wall_list[i].getBitmap(), wall_list[i].getPos().x, wall_list[i].getPos().y, null);
-        if (kill_line != null && kill_line.getActive())
-            canvas.drawBitmap(kill_line.getBitmap(), kill_line.getPos().x, kill_line.getPos().y, null);
+    }
+
+    public void RenderComputerHealthbar(Canvas canvas) {
+
+        Paint paint = new Paint();
+        paint.setARGB(255, 255, 100, 100);
+        paint.setStrokeWidth(10);
+        //paint.setStyle(Paint.Style.STROKE); // FILL_AND_STROKE
+        //canvas.drawRect(Screenwidth/20 + 5, Screenheight/25 - 5, 4 * Screenwidth/20, 2 * Screenheight/25, paint);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(mainframe.getPos().x, mainframe.getPos().y - 5, mainframe.getPos().x + (mainframe.getWidth() * (numHealth / 100)), mainframe.getPos().y + mainframe.getHeight() * 0.5f, paint);
+
+
+        paint.setColor(Color.GREEN);
+        paint.setStyle(Paint.Style.FILL);
+        //canvas.drawRect(Screenwidth/20 + 8, Screenheight/25, Screenwidth/20 + numHealth, 2 * Screenheight/25 - 5, paint);
+        canvas.drawRect(mainframe.getPos().x, mainframe.getPos().y - 5, (mainframe.getPos().x + mainframe.getWidth()), mainframe.getPos().y + mainframe.getHeight() * 0.5f, paint);
+
     }
 
     public void RenderGameplay(Canvas canvas) { // edit
@@ -541,14 +542,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 gridarray[i].spriteanimation.setY((int)gridarray[i].y);
             }
         }
-        RenderTextOnScreen(canvas, "T-SCORE: " + totalScore, 110, 1000, 80, 0, 0, 255, 255);
-        RenderRating(canvas);
-        RenderHealthbar(canvas);
+        RenderTextOnScreen(canvas, "T-SCORE: " + stat_totalScore, 110, 1000, 80, 0, 0, 255, 255);
+        //RenderHealthbar(canvas);
         RenderPause(canvas);
         RenderEnemy(canvas);
         RenderAlly(canvas);
         RenderComputer(canvas);
         RenderObjects(canvas);
+        RenderComputerHealthbar(canvas);
     }
 
     //Update method to update the game play
@@ -564,47 +565,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
                 // currentTimeMillis is wall-clock time of machine, time passed since program ran
                 circle.update(System.currentTimeMillis()); // Update sprite animation
-                for (int i = 0; i < enemy_list.length; ++i)
-                {
-                    if (enemy_list[i].getActive())
-                        enemy_list[i].Update(dt);
-                    spawn_timer.Update(dt);
-                    int inactive_index = GetInactiveEnemy(enemy_list);
-                    if (inactive_index >= 0) {
-                        if (spawn_timer.can_run) {
-                            enemy_list[inactive_index].setActive(true);
-                            spawn_timer.can_run = false;
-                        }
-                    }
-                    SensorMove();
-                    collisionEnemies();
-                }
-                for(int i = 0; i < ally_list.length; ++i)
-                {
-                    if (ally_list[i].getActive())
-                        ally_list[i].Update(dt);
-                    int inactive_index2 = GetInactiveAlly(ally_list);
-                    if (inactive_index2 >= 0) {
-                        if (spawn_timer.can_run) {
-                            ally_list[inactive_index2].setActive(true);
-                            spawn_timer.can_run = false;
-                        }
-                    }
-                    collisionAllies();
-                }
+                collisionEnemies();
+
+                   collisionAllies();
                 for (int i = 0; i < enemy_list.length; ++i)
                     if (enemy_list[i] != null && enemy_list[i].getActive())
                         enemy_list[i].Update(dt);
                     else if (enemy_list[i] == null)
                         enemy_list[i] = (Enemy)InitialiseEnemy();
-
+		int randomNum = (int)(Math.random() * 10);
                 for (int i = 0; i < ally_list.length; ++i)
                     if (ally_list[i] != null && ally_list[i].getActive())
                         ally_list[i].Update(dt);
                     else if (ally_list[i] == null)
                         ally_list[i] = (Ally) InitialiseAlly();
 
-                spawn_timer.Update(dt);
+                 spawn_timer.Update(dt, randomNum);
                 int inactive_index = GetInactiveEnemy(enemy_list);
                 if (inactive_index >= 0) {
                     if (spawn_timer.can_run) {
@@ -616,6 +592,32 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 deltaTime = dt;
             }
             break;
+            case 1: {
+                if (b_EndLevel) {
+                    time_before_end.Update(dt, -1);
+                    if (time_before_end.can_run) {
+                            /*Check if game is over, calculate rating*/
+                            if (stat_totalScore > 5)
+                                numRate = 1;
+                            else if (stat_totalScore > 10)
+                                numRate = 2;
+                            else if (stat_totalScore > 20)
+                                numRate = 3;
+                            else
+                                numRate = 0;
+                            /**/
+                            editScore.putInt("UserScore", numRate);
+                            editScore.commit();
+                            if (showAlert == true) {
+                                AlertObj.RunAlert();
+                                showAlert = false;
+                            }
+                            SensorMove();
+                            deltaTime = dt;
+                    }
+                }
+            }
+            break;
         }
     }
 
@@ -625,6 +627,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         {
             case 0:
                 RenderGameplay(canvas);
+                break;
+            case 1:
                 break;
         }
     }
@@ -700,24 +704,35 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return false;
     }
 
-    public void collisionEnemies() {
-        for (int i = 0; i < NUM_ENEMIES; i++) {
-            float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y));
-            if (Math.sqrt(distance) <= 5)
-            {
-                numHealth -= 1;
-                break;
+    // Check for collision between computer and enemies
+    public void collisionEnemies()
+    {
+        if (mainframe != null && mainframe.getActive()) {
+            for (int i = 0; i < enemy_list.length; i++) {
+                if (enemy_list[i] != null) {
+                    Vector2D distance_vec = enemy_list[i].position.Minus(mainframe.position);
+                    float dist = distance_vec.LengthSquared();
+                    float radiusSquared = 80.f;
+                    if (dist <= radiusSquared) {
+                        startVibrate();
+                        numHealth -= 50;
+                        enemy_list[i] = null;
+                        break;
+                    }
+                }
+            }
+            if (numHealth <= 0) {
+                //Gameover conditions
+                mainframe.setActive(false);
+                b_EndLevel = true;
+                GameState = 1;
+                toast.show();
             }
         }
-        if(numHealth <= 0)
-        {
-            //Gameover conditions
-        }
     }
-
     public void collisionAllies() {
         for (int i = 0; i < NUM_ALLIES; i++) {
-            float distance = ((comPosX - enemy_list[i].x) * (comPosX - enemy_list[i].x)) + ((comPosY - enemy_list[i].y) * (comPosY - enemy_list[i].y));
+            float distance = ((comPosX - ally_list[i].x) * (comPosX - ally_list[i].x)) + ((comPosY - ally_list[i].y) * (comPosY - ally_list[i].y));
             if (Math.sqrt(distance) <= 5)
             {
                 break;
@@ -729,16 +744,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public boolean CheckCrossedKillLine(Vector2D pos, final int orientation, float dt) // Pos is the enemy pos, orientation is the way the enemy crosses the line, whether its higher, lower, further right, etc
     {
         //if (dt > 0 && dt < orientation + 1) {
-        switch (orientation) {
-            case 0:
-                float del_x = pos.x + dt;
-                float negdel_x = pos.x - dt;
-                float offsetY = kill_line.getBitmap().getHeight() * 0.5f * dt;
-                float offsetX = kill_line.getBitmap().getWidth() * 0.5f * dt;
-                if (/*((pos.x >= (kill_line.x - offsetX)) && (pos.x <= (kill_line.x + offsetX))) &&*/ pos.y <= kill_line.getPos().y + kill_line.getBitmap().getHeight() * 0.5f)
-                    return true;
-                break;
-        }
+            switch (orientation) {
+                case 0:
+                    float del_x = pos.x + dt;
+                    float negdel_x = pos.x - dt;
+                    float offsetY = kill_line.getBitmap().getHeight() * 0.5f * dt;
+                    float offsetX = kill_line.getBitmap().getWidth() * 0.5f * dt;
+                    if (/*((pos.x >= (kill_line.x - offsetX)) && (pos.x <= (kill_line.x + offsetX))) &&*/ pos.y <= kill_line.getPos().y + kill_line.getBitmap().getHeight() * 0.5f)
+                        return true;
+                    break;
+            }
         //}
         return false;
     }
@@ -885,7 +900,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     public void Toastmessage(Context context)
     {
-        text = "WElcome to NGON.";
+        text = "Operation failed! Systemx32 has crashed.";
         toastTime = Toast.LENGTH_SHORT;
         toast = Toast.makeText(context, text, toastTime);
     }
@@ -963,7 +978,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     linelist[numLines].setEnd(X, Y); // line end is drawn at wherever finger is, since the finger has gone out of the old node but has not gone to a new node
                 }
                 break;
-            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_UP: // This is where most of the reset code are
                 // Check for intersection of lines after finger is up so as to calculate score
                 /*if (currIndex < 0)
                     break;*/
@@ -987,24 +1002,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                                     for (int e = 0; e < enemy_list.length; ++e)
                                         if (enemy_list[e] != null && enemy_list[e].getActive() && enemy_list[e].type == finger_pattern) {
                                             if (CheckCrossedKillLine(enemy_list[e].position, 0, deltaTime))
+                                            {
                                                 enemy_list[e] = null;
+                                                ++stat_currScore;
+                                            }
                                         }
-                                    currScore++;
                                 }
                                 INDEX = 0;
                                 finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
                                 finger_index = new int[4];
-                                //HighScores = 30;
-                                //editScore.putInt("UserScore", HighScores);
-                                //showAlert = true;
-                                //if (showAlert == true) {
-                                    //AlertObj.RunAlert();
-                                   // showAlert = false;
-                                //}
-                            }
-                           else
-                            {
-                                startVibrate();
                             }
                         }
                        else
@@ -1026,8 +1032,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     gridarray[i].active = false;
                 }
                 // total score is added up
-                totalScore += currScore;
-                currScore = 0;
+                stat_totalScore += stat_currScore;
+                stat_currScore = 0;
                 numLines = 0;
                 prevIndex = -1;
                 currIndex = -1;
