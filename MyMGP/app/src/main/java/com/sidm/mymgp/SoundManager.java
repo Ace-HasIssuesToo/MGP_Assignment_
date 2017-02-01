@@ -11,7 +11,7 @@ public class SoundManager {
     private MediaPlayer BGM;
     public SoundManager(Context context)
     {
-        BGM = MediaPlayer.create(context, R.raw.deadmau5_strobe);
+        BGM = MediaPlayer.create(context, R.raw.rage_awakened);
     }
     public void SetBGMVolume(float leftBGMVol, float rightBGMVol)
     {

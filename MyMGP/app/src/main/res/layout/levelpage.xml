@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--A layout defines the visual structure for a user interface, such as the UI for an activity or app widget-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/levelpage"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/mainmenu"
+    tools:context="com.sidm.mymgp.LevelPage">
+
+    <Button
+        android:id="@+id/btn_Level1"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginRight="100dp"
+        android:background="@drawable/pbutton"
+        android:text="Level 1"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/btn_backToMain" />
+
+    <Button
+        android:id="@+id/btn_Level2"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/pbutton"
+        android:text="Level 2"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"
+        android:layout_below="@+id/btn_Level1"
+        android:layout_alignStart="@+id/btn_Level1" />
+
+    <Button
+        android:id="@+id/btn_Level3"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/pbutton"
+        android:text="Level 3"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"
+        android:layout_below="@+id/btn_Level2"
+        android:layout_alignStart="@+id/btn_Level2" />
+
+    <Button
+        android:id="@+id/btn_Level4"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/pbutton"
+        android:text="Level 4"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"
+        android:layout_below="@+id/btn_Level3"
+        android:layout_alignStart="@+id/btn_Level3" />
+
+    <Button
+        android:id="@+id/btn_backToMain"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:background="@drawable/pbutton"
+        android:text="Quit"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"
+        android:layout_below="@+id/btn_Level4"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp" />
+</RelativeLayout>

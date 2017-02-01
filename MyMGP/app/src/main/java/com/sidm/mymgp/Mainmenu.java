@@ -44,7 +44,6 @@ public class Mainmenu extends Activity implements OnClickListener {
         }
         else if (v == btn_help)
         {
-            //intent.setClass(this, Helppage.class);
             intent.setClass(this, Splashpage.class);
         }
 

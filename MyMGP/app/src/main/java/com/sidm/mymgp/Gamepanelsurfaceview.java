@@ -58,8 +58,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private Grid[] gridarray;
     //Create a computer mainframe
     private MainFrameOBJ mainframe;
+    float comPosX, comPosY;
     final int NUM_WAYPOINT = 25; // How many waypoints are placed for enemy to follow
     private Enemy[] enemy_list;
+    final int NUM_ALLIES = 5;
+    Vector2D allyOrigin;
+    private Ally[] ally_list = new Ally[NUM_ALLIES];
 
     /*Timer for enemy spawning*/
     SpawnTimer spawn_timer;
@@ -201,7 +205,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         gridarray[3].y = cirY3;
 
         // The computer mainframe position, which is also the "final destination"(badumtss) of enemies
-        float comPosX = Screenwidth * 0.8f, comPosY = Screenheight * 0.2f;
+        comPosX = Screenwidth * 0.8f; comPosY = Screenheight * 0.2f;
         // Initialise enemies
         lvl_manager.m_des.add(new Vector2D(Screenwidth * 0.4f, Screenheight * 0.6f));
         lvl_manager.m_des.add(new Vector2D(Screenwidth * 0.4f, comPosY));
@@ -235,7 +239,29 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         linelist = new Fingerline[lvl_manager.m_numNode + 1];
         lvl_manager.m_fingerindex = new int[4];
         spawn_timer = new SpawnTimer(0.0f, 5, 0);
-        time_before_end = new SpawnTimer(0.0f, 2, 0.0f);
+ time_before_end = new SpawnTimer(0.0f, 2, 0.0f);
+        allyOrigin = new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f); // starting position
+        for (int i = 0; i < enemy_list.length; ++i)
+        {
+            ally_list[i] = new Ally(allyOrigin.x, allyOrigin.y, NUM_WAYPOINT, false);
+            for (int j = 0; j < lvl_manager.m_des.size(); ++j)
+                ally_list[i].waypoints[j] = lvl_manager.m_des.elementAt(j);
+            rand_i = (int)(Math.random() * 10);
+            if (rand_i % 2 == 0 && rand_i < 5)
+                ally_list[i].type = Ally.PATTERN.TYPE_1;
+            else if (rand_i % 2 != 0 && rand_i < 5)
+                ally_list[i].type = Ally.PATTERN.TYPE_2;
+            else
+                ally_list[i].type = Ally.PATTERN.TYPE_3;
+
+            if (ally_list[i].type == Ally.PATTERN.TYPE_1)
+                ally_list[i].bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green1)), Screenwidth / 10, Screenwidth / 10, true);
+            else if (ally_list[i].type == Ally.PATTERN.TYPE_2)
+                ally_list[i].bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green2)), Screenwidth / 10, Screenwidth / 10, true);
+            else
+                ally_list[i].bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green3)), Screenwidth / 10, Screenwidth / 10, true);
+        }
+
         Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
         mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
 
@@ -441,6 +467,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 canvas.drawBitmap(enemy_list[i].getBitmap(), enemy_list[i].getPos().x, enemy_list[i].getPos().y, null);
     }
 
+    // Render allies at their position with no paint
+    public void RenderAlly(Canvas canvas)
+    {
+        for (int i = 0; i < ally_list.length; ++i)
+            if (ally_list[i] != null && ally_list[i].getActive())
+                canvas.drawBitmap(ally_list[i].getBitmap(), ally_list[i].getPos().x, ally_list[i].getPos().y, null);
+    }
+
     public void RenderComputer(Canvas canvas)
     {
         if (mainframe != null && mainframe.getActive())
@@ -508,6 +542,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //RenderHealthbar(canvas);
         RenderPause(canvas);
         RenderEnemy(canvas);
+        RenderAlly(canvas);
         RenderComputer(canvas);
         RenderObjects(canvas);
         RenderComputerHealthbar(canvas);
@@ -527,20 +562,29 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 // currentTimeMillis is wall-clock time of machine, time passed since program ran
                 circle.update(System.currentTimeMillis()); // Update sprite animation
                 collisionEnemies();
+
+                   collisionAllies();
                 for (int i = 0; i < enemy_list.length; ++i)
                     if (enemy_list[i] != null && enemy_list[i].getActive())
                         enemy_list[i].Update(dt);
                     else if (enemy_list[i] == null)
                         enemy_list[i] = (Enemy)InitialiseEnemy();
                 int randomNum = (int)(Math.random() * 10);
+for (int i = 0; i < ally_list.length; ++i)
+                    if (ally_list[i] != null && ally_list[i].getActive())
+                        ally_list[i].Update(dt);
+                    else if (ally_list[i] == null)
+                        ally_list[i] = (Ally) InitialiseAlly();
                 spawn_timer.Update(dt, randomNum);
-                // Object Pooling
-                /*
-                int inactive_index = GetInactiveEnemy(enemy_list);
-                if (inactive_index >= 0) {
-                    if (spawn_timer.can_run) {
-                        enemy_list[inactive_index].setActive(true);
-                        spawn_timer.can_run = false;
+
+                /* Object Pooling */ // currently this is causing enemies to repeatedly spawn if the player does not kill the last one. If you want the game to end after the last enemy hits mainframe, just add --m_numenemies to collisionenemies()
+                if (lvl_manager.m_numEnemies > 0 && !GetEnemyActiveStatus(enemy_list)) {
+                    int inactive_index = GetInactiveEnemy(enemy_list);
+                    if (inactive_index >= 0) {
+                        if (spawn_timer.can_run) {
+                            enemy_list[inactive_index].setActive(true);
+                            spawn_timer.can_run = false;
+                        }
                     }
                 }
                 /**/
@@ -710,6 +754,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             }
         }
     }
+    public void collisionAllies() {
+        for (int i = 0; i < NUM_ALLIES; i++) {
+            float distance = ((comPosX - ally_list[i].x) * (comPosX - ally_list[i].x)) + ((comPosY - ally_list[i].y) * (comPosY - ally_list[i].y));
+            if (Math.sqrt(distance) <= 5)
+            {
+                break;
+            }
+        }
+    }
 
     // Check if kill line has been crossed by enemy
     public boolean CheckCrossedKillLine(Vector2D pos, final int orientation, float dt) // Pos is the enemy pos, orientation is the way the enemy crosses the line, whether its higher, lower, further right, etc
@@ -801,6 +854,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 return i;
         return -1; // none are inactive so return invalid index
     }
+    // Returns true if there is at least one enemy active or not null
+    public boolean GetEnemyActiveStatus(Enemy[] arr)
+    {
+        for (int i = 0; i < arr.length; ++i)
+            if (arr[i] != null && arr[i].getActive())
+                return true;
+        return false; // none are active so return invalid index
+    }
     private Objects InitialiseEnemy() {
         int rand_i = 0;
         Enemy enemy = new Enemy(lvl_manager.m_enemyStartPos.x, lvl_manager.m_enemyStartPos.y, NUM_WAYPOINT, false, lvl_manager.m_enemySpeed);
@@ -825,6 +886,35 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         else
             enemy.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.patternright)), Screenwidth / 10, Screenwidth / 10, true);
         return enemy;
+    }
+    public int GetInactiveAlly(Ally[] arr)
+    {
+        for (int i = 0; i < arr.length; ++i)
+            if (arr[i] != null && !arr[i].getActive())
+                return i;
+        return -1; // none are inactive so return invalid index
+    }
+    private Objects InitialiseAlly()
+    {
+        int rand_i = 0;
+        Ally ally = new Ally(allyOrigin.x, allyOrigin.y, NUM_WAYPOINT, false);
+        for (int j = 0; j < lvl_manager.m_des.size(); ++j)
+            ally.waypoints[j] = lvl_manager.m_des.elementAt(j);
+        rand_i = (int) (Math.random() * 10);
+        if (rand_i % 2 == 0 && rand_i < 5)
+            ally.type = Ally.PATTERN.TYPE_1;
+        else if (rand_i % 2 != 0 && rand_i < 5)
+            ally.type = Ally.PATTERN.TYPE_2;
+        else
+            ally.type = Ally.PATTERN.TYPE_3;
+
+        if (ally.type == Ally.PATTERN.TYPE_1)
+            ally.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green1)), Screenwidth / 10, Screenwidth / 10, true);
+        else if (ally.type == Ally.PATTERN.TYPE_2)
+            ally.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green2)), Screenwidth / 10, Screenwidth / 10, true);
+        else
+            ally.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green3)), Screenwidth / 10, Screenwidth / 10, true);
+        return ally;
     }
 
     public void startVibrate()

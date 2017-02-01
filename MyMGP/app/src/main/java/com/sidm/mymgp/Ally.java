@@ -13,17 +13,21 @@ public class Ally extends Objects
     public int waypoint_index;
     public Vector2D[] waypoints;
 
-    public Ally(Bitmap bitmap_, float positionX_, float positionY_, int num_waypoints_, boolean active_)
+    public Ally(float positionX_, float positionY_, int num_waypoints_, boolean active_)
     {
-        bitmap = bitmap_;
         position.x = positionX_;
         position.y = positionY_;
 
         MAX_WAYPOINTS = num_waypoints_;
         waypoints = new Vector2D[MAX_WAYPOINTS];
         state = State.State_move;
-        type = PATTERN.TYPE_DOWN;
-
+        type = PATTERN.TYPE_1;
+        waypoint_index = 0;
+        for (int i = 0; i < MAX_WAYPOINTS; ++i)
+        {
+            waypoints[i] = Vector2D.Zero;
+        }
+        waypoint_index = 0;
         setActive(active_);
     }
 
@@ -36,10 +40,9 @@ public class Ally extends Objects
     }
     public enum PATTERN
     {
-        TYPE_LEFT,
-        TYPE_RIGHT,
-        TYPE_UP,
-        TYPE_DOWN,
+        TYPE_1,
+        TYPE_2,
+        TYPE_3,
         TYPE_MAX_TYPE
     }
 
@@ -54,7 +57,7 @@ public class Ally extends Objects
         {
             case State_move:
                 // Speed of enemy
-                float speed = 200;
+                float speed = 100;
                 // Delta time speed of enemy, frame rate independant
                 float delta_speed = speed * dt;
                 if (!position.equals(waypoints[waypoint_index], delta_speed)) // Not at destination
