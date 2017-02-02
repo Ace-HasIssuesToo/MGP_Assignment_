@@ -1,11 +1,8 @@
 How to play:
-Swipe to form shapes
-Earn 1 point for 1 shape
-Only can draw up to 8 lines
+Connect grid nodes to form patterns
+Form the patterns on the enemies as they traverse a maze to change them into allies
 
-
-//Contributions
-
+//Contributions - Assignment 1
 Samuel Tan <153942B>:
 Draw line
 User Input
@@ -19,12 +16,29 @@ Detection of shapes using math algorythym y = mx + c
 Sprite animation
 Vibration
 
-//Future Plans
-Add level select menu
-Add more levels and larger grid
-Add Scoring based on how  many enemies are killed with the same pattern on their backs
-Make the user unable to use the same pattern twice
-Main computer to protect
+//Contributions - Assignment 2
+Samuel Tan <153942B>:
+Computer healthbar
+Tutorial page
+Toast for win and lose conditions
+Alert for win and lose
+Win condition
+Score multiplier
+Random spawning
+Timer to limit spawn rate
+Highscore
+Entity movement using waypoints and state changing using finite state machine
+Enemies
+
+Tristan Chia <150513M>:
+Allies(movement using waypoints, its function to add health to computer)
 Audio
-Enemy grouping
-Environment obstacle to mark where to walk
+Computer health
+Level select menu
+Level management(initialisation and transition)
+All the graphics and aesthetics
+Options
+
+
+//Future Plans
+Social Media(code is there but commented away cuz crashing)
