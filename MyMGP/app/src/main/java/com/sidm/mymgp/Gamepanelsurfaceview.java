@@ -61,16 +61,19 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     float comPosX, comPosY;
     final int NUM_WAYPOINT = 25; // How many waypoints are placed for enemy to follow
     private Enemy[] enemy_list;
-    final int NUM_ALLIES = 5;
-    Vector2D allyOrigin;
-    private Ally[] ally_list = new Ally[NUM_ALLIES];
+    private Ally[] ally_list;
 
-    /*Timer for enemy spawning*/
+    /*Timer for entity spawning*/
     SpawnTimer spawn_timer;
+    SpawnTimer ally_spawnTimer;
     /**/
     /*Wall objects and kill-line*/
     public Objects[] wall_list;
     public Objects kill_line;
+    float prev_enemyX; // Stores previous enemy position to make enemies line up
+    float prev_enemyY; // Stores previous enemy position to make enemies line up
+    float prev_allyX; // Stores previous enemy position to make enemies line up
+    float prev_allyY; // Stores previous enemy position to make enemies line up
     /**/
 
     // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
@@ -78,6 +81,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public static final int INDEX_TOP_RIGHT = 1;
     public static final int INDEX_BOTTOM_LEFT = 2;
     public static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
+
+    /*shared preferences to pass selected level number from LevelPage to GamePlay page*/
+    public static int CURRENT_LEVEL;
+    /**/
 
     // var for one grid node
     private float cirX = 0, cirY = 0;
@@ -141,6 +148,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     SharedPreferences.Editor editName;
     SharedPreferences SharedPrefScore;
     SharedPreferences.Editor editScore;
+    SharedPreferences sharedPref_level;
+
     // Names to be shared
     String Playername;
 
@@ -167,8 +176,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         Screenwidth = metrics.widthPixels;
         Screenheight = metrics.heightPixels;
-        lvl_manager = new LevelManager();
-        lvl_manager.Init(9, new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f), 5, 100.f);
+        sharedPref_level = getContext().getSharedPreferences("SelectedLevel", Context.MODE_PRIVATE);
+        CURRENT_LEVEL = sharedPref_level.getInt("SelectedLevel", 0);
+        LevelManager.m_levellist.add(0, new LevelManager());
+        LevelManager.m_levellist.add(1, new LevelManager());
+        //LevelManager.m_levellist.elementAt(CURRENT_LEVEL - 1) = new LevelManager();
+        // The computer mainframe position, which is also the "final destination"(badumtss) of enemies
+        comPosX = Screenwidth * 0.8f; comPosY = Screenheight * 0.2f;
+        LevelManager.m_levellist.elementAt(0).Init(9, new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f), 5, 100.f, new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f), 1, 150.f); // starting position);
+        LevelManager.m_levellist.elementAt(1).Init(4, new Vector2D(0, comPosY), 20, 110.f, new Vector2D(0, comPosY), 5, 160.f);
+        //lvl_manager = LevelManager.m_levellist.elementAt(CURRENT_LEVEL - 1);
+        lvl_manager = LevelManager.m_levellist.elementAt(CURRENT_LEVEL - 1);
         // getResources() returns you the app res folder, we then decode the image using its R.id
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.matrix);
         ball = BitmapFactory.decodeResource(getResources(), R.drawable.dragonballpixel2);
@@ -204,17 +222,20 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         gridarray[3].x = cirX3;
         gridarray[3].y = cirY3;
 
-        // The computer mainframe position, which is also the "final destination"(badumtss) of enemies
-        comPosX = Screenwidth * 0.8f; comPosY = Screenheight * 0.2f;
         // Initialise enemies
-        lvl_manager.m_des.add(new Vector2D(Screenwidth * 0.4f, Screenheight * 0.6f));
-        lvl_manager.m_des.add(new Vector2D(Screenwidth * 0.4f, comPosY));
-        lvl_manager.m_des.add(new Vector2D(comPosX, comPosY));
+        lvl_manager.SetEnemiesDestination(CURRENT_LEVEL, Screenwidth, Screenheight, new Vector2D(comPosX, comPosY));
+
         enemy_list = new Enemy[lvl_manager.m_numEnemies];
         int rand_i = 0;
+        prev_enemyX = lvl_manager.m_enemyStartPos.x;
+        prev_enemyY = lvl_manager.m_enemyStartPos.y;
         for (int i = 0; i < enemy_list.length; ++i)
         {
-            enemy_list[i] = new Enemy(lvl_manager.m_enemyStartPos.x, lvl_manager.m_enemyStartPos.y, NUM_WAYPOINT, false, lvl_manager.m_enemySpeed);
+            enemy_list[i] = new Enemy(prev_enemyX, prev_enemyY, NUM_WAYPOINT, false, lvl_manager.m_enemySpeed);
+            if (CURRENT_LEVEL == 1)
+                prev_enemyX -= Screenwidth * 0.1f;
+            else if (CURRENT_LEVEL == 2)
+                prev_enemyY -= Screenheight * 0.1f;
             for (int j = 0; j < lvl_manager.m_des.size(); ++j)
                 enemy_list[i].waypoints[j] = lvl_manager.m_des.elementAt(j);
             rand_i = (int)(Math.random() * 10);
@@ -239,11 +260,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         linelist = new Fingerline[lvl_manager.m_numNode + 1];
         lvl_manager.m_fingerindex = new int[4];
         spawn_timer = new SpawnTimer(0.0f, 5, 0);
- time_before_end = new SpawnTimer(0.0f, 2, 0.0f);
-        allyOrigin = new Vector2D(Screenwidth * 0.15f, Screenheight * 0.6f); // starting position
-        for (int i = 0; i < enemy_list.length; ++i)
+        ally_spawnTimer = new SpawnTimer(0.0f, 4, 0);
+        time_before_end = new SpawnTimer(0.0f, 2, 0.0f);
+        ally_list = new Ally[lvl_manager.m_numAlly];
+        prev_allyX = lvl_manager.m_allyStartPos.x;
+        prev_allyY = lvl_manager.m_allyStartPos.y;
+        for (int i = 0; i < ally_list.length; ++i)
         {
-            ally_list[i] = new Ally(allyOrigin.x, allyOrigin.y, NUM_WAYPOINT, false);
+            ally_list[i] = new Ally(prev_allyX, prev_allyY, NUM_WAYPOINT, false);
+            if (CURRENT_LEVEL == 1)
+                prev_allyX -= Screenwidth * 0.1f;
+            else if (CURRENT_LEVEL == 2)
+                prev_allyY -= Screenheight * 0.1f;
             for (int j = 0; j < lvl_manager.m_des.size(); ++j)
                 ally_list[i].waypoints[j] = lvl_manager.m_des.elementAt(j);
             rand_i = (int)(Math.random() * 10);
@@ -272,9 +300,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             wall_list[i].position.x = Screenwidth * 0.2f;
             wall_list[i].position.y = Screenheight * 0.5f - (Screenheight / 10) * i;
         }
-        kill_line = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.laser)), (int)(Screenwidth * 0.6f - Screenwidth * 0.2f), Screenheight / 2, true), 5, 5);
-        kill_line.position.Set(Screenwidth * 0.2f + (float)(Screenwidth / 10 * 0.5), lvl_manager.m_des.elementAt(1).y  + 50.f); // Position is where the wall are plus the wall's sprite width, so the laser starts from the middle of the block
-
+        if (CURRENT_LEVEL == 1) {
+            kill_line = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.laser)), (int) (Screenwidth * 0.6f - Screenwidth * 0.2f), Screenheight / 2, true), 5, 5);
+            kill_line.position.Set(Screenwidth * 0.2f + (Screenwidth / 10 * 0.5f), lvl_manager.m_des.elementAt(1).y + 50.f);
+        }
+            else if (CURRENT_LEVEL == 2) {
+            kill_line = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.laservertical)), Screenheight / 2, (int) (Screenwidth * 0.6f - Screenwidth * 0.2f), true), 5, 5);
+            kill_line.position.Set(lvl_manager.m_des.elementAt(1).x - 600.f, lvl_manager.m_des.elementAt(1).y); // Position is where the wall are plus the wall's sprite width, so the laser starts from the middle of the block
+        }
         //Load font
         myfont = Typeface.createFromAsset(getContext().getAssets(),"fonts/finalf.ttf");
 
@@ -442,13 +475,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private void RenderHealthbar(Canvas canvas)
     {
         Paint paint = new Paint();
-        paint.setColor(Color.GREEN);
+        paint.setColor(Color.RED);
         paint.setStrokeWidth(10);
-        paint.setStyle(Paint.Style.STROKE); // FILL AND STROKE
-        canvas.drawRect(Screenwidth / 20 + 5, Screenheight/20 - 5, 4*Screenwidth/20, 2 * Screenheight/25, paint);
+        paint.setStyle(Paint.Style.FILL); // FILL AND STROKE
+        canvas.drawRect(Screenwidth / 20 + 8, Screenheight/20, Screenwidth/20 + numHealth, 2 * Screenheight/25, paint);
         paint.setColor(Color.GREEN);
         paint.setStyle(Paint.Style.FILL);
-        canvas.drawRect(Screenwidth / 20 + 8, Screenheight/20, Screenwidth/20 + numHealth, 2 * Screenheight/25 - 5, paint);
+        canvas.drawRect(Screenwidth / 20 + 8, Screenheight/20, Screenwidth/20 + numHealth, 2 * Screenheight/25, paint);
     }
 
     public void RenderPause(Canvas canvas)
@@ -541,8 +574,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         RenderTextOnScreen(canvas, "T-SCORE: " + stat_totalScore, 110, 1000, 80, 0, 0, 255, 255);
         //RenderHealthbar(canvas);
         RenderPause(canvas);
-        RenderEnemy(canvas);
         RenderAlly(canvas);
+        RenderEnemy(canvas);
         RenderComputer(canvas);
         RenderObjects(canvas);
         RenderComputerHealthbar(canvas);
@@ -565,19 +598,21 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
                    collisionAllies();
                 for (int i = 0; i < enemy_list.length; ++i)
-                    if (enemy_list[i] != null && enemy_list[i].getActive())
+                    if (enemy_list[i] != null && enemy_list[i].getActive()) {
                         enemy_list[i].Update(dt);
+                    }
                     else if (enemy_list[i] == null)
                         enemy_list[i] = (Enemy)InitialiseEnemy();
                 int randomNum = (int)(Math.random() * 10);
-for (int i = 0; i < ally_list.length; ++i)
+                    for (int i = 0; i < ally_list.length; ++i)
                     if (ally_list[i] != null && ally_list[i].getActive())
                         ally_list[i].Update(dt);
                     else if (ally_list[i] == null)
                         ally_list[i] = (Ally) InitialiseAlly();
                 spawn_timer.Update(dt, randomNum);
-
-                /* Object Pooling */ // currently this is causing enemies to repeatedly spawn if the player does not kill the last one. If you want the game to end after the last enemy hits mainframe, just add --m_numenemies to collisionenemies()
+                ally_spawnTimer.Update(dt, -1);
+                /* Object Pooling */ // currently this is causing enemies to repeatedly spawn
+                // if the player does not kill the last one. If you want the game to end after the last enemy hits mainframe, just add --m_numenemies to collisionenemies()
                 if (lvl_manager.m_numEnemies > 0 && !GetEnemyActiveStatus(enemy_list)) {
                     int inactive_index = GetInactiveEnemy(enemy_list);
                     if (inactive_index >= 0) {
@@ -595,6 +630,16 @@ for (int i = 0; i < ally_list.length; ++i)
                         enemy_list[inactive_index].setActive(true);
                         spawn_timer.can_run = false;
                         --lvl_manager.m_enemySpawnIndex;
+                    }
+                }
+                /**/
+                /* Making allies spawn according to seconds*/
+                inactive_index = lvl_manager.m_allySpawnIndex;
+                if (inactive_index >= 0) {
+                    if (ally_spawnTimer.can_run) {
+                        ally_list[inactive_index].setActive(true);
+                        ally_spawnTimer.can_run = false;
+                        --lvl_manager.m_allySpawnIndex;
                     }
                 }
                 /**/
@@ -755,12 +800,27 @@ for (int i = 0; i < ally_list.length; ++i)
         }
     }
     public void collisionAllies() {
-        for (int i = 0; i < NUM_ALLIES; i++) {
+        for (int i = 0; i < ally_list.length; i++) {
             float distance = ((comPosX - ally_list[i].x) * (comPosX - ally_list[i].x)) + ((comPosY - ally_list[i].y) * (comPosY - ally_list[i].y));
-            if (Math.sqrt(distance) <= 5)
-            {
-                break;
+            if (mainframe != null && mainframe.getActive()) {
+                Vector2D distance_vec = ally_list[i].position.Minus(mainframe.position);
+                float dist = distance_vec.LengthSquared();
+                float radiusSquared = 80.f;
+                if (dist <= radiusSquared) {
+                    numHealth += 50;
+                    ally_list[i] = null;
+                    break;
+                }
             }
+//            if (Math.sqrt(distance) <= 5)
+//            {
+//
+//                break;
+//            }
+        }
+        if (numHealth > 100) {
+            // limit health to max_health
+            numHealth = 100;
         }
     }
 
@@ -775,6 +835,10 @@ for (int i = 0; i < ally_list.length; ++i)
                     float offsetY = kill_line.getBitmap().getHeight() * 0.5f * dt;
                     float offsetX = kill_line.getBitmap().getWidth() * 0.5f * dt;
                     if (/*((pos.x >= (kill_line.x - offsetX)) && (pos.x <= (kill_line.x + offsetX))) &&*/ pos.y <= kill_line.getPos().y + kill_line.getBitmap().getHeight() * 0.5f)
+                        return true;
+                    break;
+                case 1:
+                    if (pos.x >= kill_line.getPos().x + kill_line.getBitmap().getWidth() * 0.5f)
                         return true;
                     break;
             }
@@ -897,7 +961,7 @@ for (int i = 0; i < ally_list.length; ++i)
     private Objects InitialiseAlly()
     {
         int rand_i = 0;
-        Ally ally = new Ally(allyOrigin.x, allyOrigin.y, NUM_WAYPOINT, false);
+        Ally ally = new Ally(lvl_manager.m_allyStartPos.x, lvl_manager.m_allyStartPos.y, NUM_WAYPOINT, false);
         for (int j = 0; j < lvl_manager.m_des.size(); ++j)
             ally.waypoints[j] = lvl_manager.m_des.elementAt(j);
         rand_i = (int) (Math.random() * 10);
@@ -1037,7 +1101,15 @@ for (int i = 0; i < ally_list.length; ++i)
                                 {
                                     for (int e = 0; e < enemy_list.length; ++e)
                                         if (enemy_list[e] != null && enemy_list[e].getActive() && enemy_list[e].type == lvl_manager.m_fingerpattern) {
-                                            if (CheckCrossedKillLine(enemy_list[e].position, 0, deltaTime))
+                                            if (CURRENT_LEVEL == 1 && CheckCrossedKillLine(enemy_list[e].position, 0, deltaTime))
+                                            {
+                                                enemy_list[e] = null;
+                                                stat_currScore += lvl_manager.score_multiplier * num_destroyed;
+                                                ++lvl_manager.score_multiplier;
+                                                --lvl_manager.m_numEnemies;
+                                                ++stat_currScore;
+                                            }
+                                            else if (CURRENT_LEVEL == 2 && CheckCrossedKillLine(enemy_list[e].position, 1, deltaTime))
                                             {
                                                 enemy_list[e] = null;
                                                 stat_currScore += lvl_manager.score_multiplier * num_destroyed;

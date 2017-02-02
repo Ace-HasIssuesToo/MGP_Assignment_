@@ -45,7 +45,7 @@ public class TutorialPage extends Activity implements View.OnClickListener {
         Intent intent = new Intent();
         //if (v == btn_start)
         {
-            intent.setClass(this, Gamepage.class);
+            intent.setClass(this, LevelPage.class);
         }
         startActivity(intent); // Go to gamepage class
     }
@@ -91,7 +91,7 @@ public class TutorialPage extends Activity implements View.OnClickListener {
                         Intent intent = new Intent();
                         //if (v == btn_start)
                         {
-                            intent.setClass(this, Gamepage.class);
+                            intent.setClass(this, LevelPage.class);
                         }
                         startActivity(intent); // Go to gamepage class
                     }

@@ -1,7 +1,9 @@
 package com.sidm.mymgp;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,6 +20,12 @@ public class LevelPage extends Activity implements OnClickListener {
     private Button btn_Level3;
     private Button btn_Level4;
     private Button btn_backToMain;
+
+    // To be used in GamePanelSurfaceView to get the selected level
+    SharedPreferences sharedPref_level;
+    SharedPreferences.Editor level_edit;
+    // selected level number
+    int level_num;
 
     @Override
     // initialize activity
@@ -40,6 +48,15 @@ public class LevelPage extends Activity implements OnClickListener {
         btn_Level3.setOnClickListener(this);
         btn_Level4 = (Button)findViewById(R.id.btn_Level4);
         btn_Level4.setOnClickListener(this);
+
+        // shared preferences
+        // create a shared file, is shared among all callers of getSharedPreferences, MODE_PRIVATE is default operation
+        sharedPref_level = this.getSharedPreferences("SelectedLevel",Context.MODE_PRIVATE);
+        // Allows modification to the SharedPreferences object
+        level_edit = sharedPref_level.edit();
+        level_num = 0;
+        // Get the value stored by SharedPreferences, if nothing, return DEFAULT
+        level_num = sharedPref_level.getInt("SelectedLevel", 0);
     }
 
     // *Must* be implemented since this is an interface function
@@ -50,24 +67,29 @@ public class LevelPage extends Activity implements OnClickListener {
         if (v == btn_Level1)
         {
             intent.setClass(this, Gamepage.class);
+            level_num = 1;
         }
         else if (v == btn_Level2)
         {
             intent.setClass(this, Gamepage.class);
+            level_num = 2;
         }
         else if (v == btn_Level3)
         {
             intent.setClass(this, Gamepage.class);
+            level_num = 1;
         }
         else if (v == btn_Level4)
         {
             intent.setClass(this, Gamepage.class);
+            level_num = 1;
         }
         else if (v == btn_backToMain)
         {
             intent.setClass(this, Mainmenu.class);
         }
-
+        level_edit.putInt("SelectedLevel", level_num);
+        level_edit.commit();
         startActivity(intent); // Go to gamepage class
     }
 
