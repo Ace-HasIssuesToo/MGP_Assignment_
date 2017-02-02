@@ -20,6 +20,17 @@
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true" />
 
+    <Button
+        android:text="Share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/scoreText"
+        android:layout_toEndOf="@+id/textView"
+        android:background="@drawable/pbutton"
+        android:textSize="18dp"
+        android:textColor="#302669"
+        android:id="@+id/btn_sharescore" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -38,5 +49,21 @@
         android:layout_marginTop="32dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
+
+    <!--<com.facebook.login.widget.LoginButton
+        android:id="@+id/fb_login_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"/>
+
+    <com.facebook.login.widget.ProfilePictureView
+        android:id="@+id/picture"
+        android:layout_gravity="center"
+        android:layout_width="100sp"
+        android:layout_height="100sp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="20dp"
+        android:layout_above="@+id/btn_sharescore"
+        android:layout_toStartOf="@+id/textView"/>-->
 
 </RelativeLayout>

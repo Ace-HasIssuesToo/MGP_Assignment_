@@ -13,13 +13,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.hardware.SensorEventListener;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.nfc.Tag;
 import android.os.Vibrator;
-import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.style.EasyEditSpan;
@@ -61,13 +57,34 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Create an array of nodes to form a grid
     private Grid[] gridarray;
     //Create a computer mainframe
+<<<<<<< HEAD
     private MainFrameOBJ mainframe;
-    float comPosX, comPosY;
     final int NUM_WAYPOINT = 25; // How many waypoints are placed for enemy to follow
     private Enemy[] enemy_list;
+=======
+    float comPosX = Screenwidth / 2, comPosY = Screenheight / 2;
+    Bitmap ComputerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.computer);
+    private MainFrameOBJ mainframe = new MainFrameOBJ(ComputerSprite, comPosX, comPosY);
+    // Create a list of enemies, use a EnemyManager class is needed in future
+    final int NUM_ENEMIES = 5;
+    Vector2D enemyorigin;
+    final int NUM_WAYPOINT = 25; // How many waypoints are placed for enemy to follow
+    Vector<Vector2D> des;
+    private Enemy[] enemy_list = new Enemy[NUM_ENEMIES];
     final int NUM_ALLIES = 5;
     Vector2D allyOrigin;
     private Ally[] ally_list = new Ally[NUM_ALLIES];
+
+    // Determines which pattern player is going to dish out
+    Enemy.PATTERN finger_pattern = Enemy.PATTERN.TYPE_MAX_TYPE;
+    // Hardcoded according to cirX, cirY, cirX1, cirY1... These are used to improve readability in TouchEvent()
+    private static final int INDEX_TOP_LEFT = 0;
+    private static final int INDEX_TOP_RIGHT = 1;
+    private static final int INDEX_BOTTOM_LEFT = 2;
+    private static final int INDEX_BOTTOM_RIGHT = 3; // not final so it can be changed in the constructor during cirX declaraction
+    private int[] finger_index; // Guess you can say this game is best played with the index_finger, badumtss.
+    private int INDEX = 0;
+>>>>>>> a33d020d6e40b7e6436198ac3f196265a6e0fe3c
 
     /*Timer for enemy spawning*/
     SpawnTimer spawn_timer;
@@ -160,14 +177,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private SoundManager soundManager;
     public Vibrator m_vibrator;
 
-    static boolean soundToggle;
-
-    SoundPool SoundPool;
-
-    AudioAttributes Attributes;
-
-    int soundID;
-
     //constructor for this GamePanelSurfaceView class
     public Gamepanelsurfaceview (Context context, Activity activity){
         // Context is the current state of the application/object
@@ -217,7 +226,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         gridarray[3].y = cirY3;
 
         // The computer mainframe position, which is also the "final destination"(badumtss) of enemies
-        comPosX = Screenwidth * 0.8f; comPosY = Screenheight * 0.2f;
+        float comPosX = Screenwidth * 0.8f, comPosY = Screenheight * 0.2f;
         // Initialise enemies
         lvl_manager.m_des.add(new Vector2D(Screenwidth * 0.4f, Screenheight * 0.6f));
         lvl_manager.m_des.add(new Vector2D(Screenwidth * 0.4f, comPosY));
@@ -256,8 +265,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         for (int i = 0; i < enemy_list.length; ++i)
         {
             ally_list[i] = new Ally(allyOrigin.x, allyOrigin.y, NUM_WAYPOINT, false);
-            for (int j = 0; j < lvl_manager.m_des.size(); ++j)
-                ally_list[i].waypoints[j] = lvl_manager.m_des.elementAt(j);
+            for (int j = 0; j < des.size(); ++j)
+                ally_list[i].waypoints[j] = des.elementAt(j);
             rand_i = (int)(Math.random() * 10);
             if (rand_i % 2 == 0 && rand_i < 5)
                 ally_list[i].type = Ally.PATTERN.TYPE_1;
@@ -298,6 +307,20 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         stat_totalScore = 0; stat_currScore = 0;
         numRate = 3;
         numHealth = 100;
+//        int posx = 2;
+//        for (int i = 0; i < gridarray.length; ++i)
+//        {
+//            gridarray[i].bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
+//            if (posx != 0) {
+//                gridarray[i].x = Screenwidth / (posx);
+//            }
+//            else {
+//                gridarray[i].x = Screenwidth;
+//            }
+//            posx += 5;
+//            //Log.v("sam", "pos: " + posx + " index: " + i);
+//            gridarray[i].y = Screenheight * 0.5f;
+//        }
         // filter param is to go through bilinear interpolation for getting a high quality image after scaling up
         PauseB1 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
         PauseB2 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
@@ -306,6 +329,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Make the GamePanel focusable so it can handle events
         setFocusable(true);
         activityTracker = activity;
+        //Intent intent = new Intent();
+        //intent.setClass(getContext(), Mainmenu.class);
+       // activityTracker.startActivity(intent);
         // Adding the callback (this) to the surface holder to intercept events on physical surface/screen
         getHolder().addCallback(this);
         sensor = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
@@ -355,11 +381,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         numRate = 0;
         numRate = SharedPrefScore.getInt("UserScore", 0);
         b_EndLevel = false;
-
-        //SoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
-        //Attributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
-        //SoundPool = new SoundPool.Builder().setAudioAttributes(Attributes).setMaxStreams(2).build();
-
     }
 
     //must implement inherited abstract methods
@@ -370,10 +391,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             myThread.startRun(true);
             myThread.start();
         }
-        if(soundToggle == true)
-            {soundManager.PlayBGM();}
-        else
-        {}
+        soundManager.PlayBGM();
     }
 
     public void surfaceDestroyed(SurfaceHolder holder){
@@ -572,22 +590,26 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         enemy_list[i].Update(dt);
                     else if (enemy_list[i] == null)
                         enemy_list[i] = (Enemy)InitialiseEnemy();
+<<<<<<< HEAD
                 int randomNum = (int)(Math.random() * 10);
-for (int i = 0; i < ally_list.length; ++i)
+                spawn_timer.Update(dt, randomNum);
+                // Object Pooling
+                /*
+=======
+		int randomNum = (int)(Math.random() * 10);
+                for (int i = 0; i < ally_list.length; ++i)
                     if (ally_list[i] != null && ally_list[i].getActive())
                         ally_list[i].Update(dt);
                     else if (ally_list[i] == null)
                         ally_list[i] = (Ally) InitialiseAlly();
-                spawn_timer.Update(dt, randomNum);
 
-                /* Object Pooling */ // currently this is causing enemies to repeatedly spawn if the player does not kill the last one. If you want the game to end after the last enemy hits mainframe, just add --m_numenemies to collisionenemies()
-                if (lvl_manager.m_numEnemies > 0 && !GetEnemyActiveStatus(enemy_list)) {
-                    int inactive_index = GetInactiveEnemy(enemy_list);
-                    if (inactive_index >= 0) {
-                        if (spawn_timer.can_run) {
-                            enemy_list[inactive_index].setActive(true);
-                            spawn_timer.can_run = false;
-                        }
+                 spawn_timer.Update(dt, randomNum);
+>>>>>>> a33d020d6e40b7e6436198ac3f196265a6e0fe3c
+                int inactive_index = GetInactiveEnemy(enemy_list);
+                if (inactive_index >= 0) {
+                    if (spawn_timer.can_run) {
+                        enemy_list[inactive_index].setActive(true);
+                        spawn_timer.can_run = false;
                     }
                 }
                 /**/
@@ -857,14 +879,6 @@ for (int i = 0; i < ally_list.length; ++i)
                 return i;
         return -1; // none are inactive so return invalid index
     }
-    // Returns true if there is at least one enemy active or not null
-    public boolean GetEnemyActiveStatus(Enemy[] arr)
-    {
-        for (int i = 0; i < arr.length; ++i)
-            if (arr[i] != null && arr[i].getActive())
-                return true;
-        return false; // none are active so return invalid index
-    }
     private Objects InitialiseEnemy() {
         int rand_i = 0;
         Enemy enemy = new Enemy(lvl_manager.m_enemyStartPos.x, lvl_manager.m_enemyStartPos.y, NUM_WAYPOINT, false, lvl_manager.m_enemySpeed);
@@ -901,8 +915,8 @@ for (int i = 0; i < ally_list.length; ++i)
     {
         int rand_i = 0;
         Ally ally = new Ally(allyOrigin.x, allyOrigin.y, NUM_WAYPOINT, false);
-        for (int j = 0; j < lvl_manager.m_des.size(); ++j)
-            ally.waypoints[j] = lvl_manager.m_des.elementAt(j);
+        for (int j = 0; j < des.size(); ++j)
+            ally.waypoints[j] = des.elementAt(j);
         rand_i = (int) (Math.random() * 10);
         if (rand_i % 2 == 0 && rand_i < 5)
             ally.type = Ally.PATTERN.TYPE_1;
@@ -918,15 +932,6 @@ for (int i = 0; i < ally_list.length; ++i)
         else
             ally.bitmap = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.green3)), Screenwidth / 10, Screenwidth / 10, true);
         return ally;
-    }
-
-    static public void setSoundToggle(boolean setSound)
-    {
-        setSound = soundToggle;
-    }
-    static public boolean getSoundToggle()
-    {
-        return soundToggle;
     }
 
     public void startVibrate()
@@ -1045,7 +1050,12 @@ for (int i = 0; i < ally_list.length; ++i)
                             temp4 = new Vector2D(linelist[j].getEndX(),linelist[j].getEndY());
                             if(intersectCheck.algebraNonsense())
                             {
+<<<<<<< HEAD
                                 if (lvl_manager.m_fingerpattern != Enemy.PATTERN.TYPE_MAX_TYPE)
+=======
+                                toast.show();
+                                if (finger_pattern != Enemy.PATTERN.TYPE_MAX_TYPE)
+>>>>>>> a33d020d6e40b7e6436198ac3f196265a6e0fe3c
                                 {
                                     for (int e = 0; e < enemy_list.length; ++e)
                                         if (enemy_list[e] != null && enemy_list[e].getActive() && enemy_list[e].type == lvl_manager.m_fingerpattern) {
@@ -1091,5 +1101,15 @@ for (int i = 0; i < ally_list.length; ++i)
                 currIndex = -1;
                 break;
         }          return true;
+        // 5) In event of touch on screen, the spaceship will relocate to the point of touch
+//        short X = (short)event.getX(); // temp value of the screen touch
+//        short Y = (short)event.getY();
+//
+//        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//            mX = (short)(X - ship[shipIndex].getWidth() * 0.5);
+//            mY = (short)(Y - ship[shipIndex].getHeight() * 0.5);
+//        }
+//
+//        return super.onTouchEvent(event);
     }
 }

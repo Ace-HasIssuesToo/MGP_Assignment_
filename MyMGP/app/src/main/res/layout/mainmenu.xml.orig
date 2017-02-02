@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--A layout defines the visual structure for a user interface, such as the UI for an activity or app widget-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainmenu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/mainmenupage"
+    tools:context="com.sidm.mymgp.Mainmenu">
+
+<<<<<<< HEAD
+=======
+    <!-- TextView is a text object  -->
+    <!-- Identification of object  -->
+    <!-- the text of this object  -->
+    <!-- wrap_content tells your view to size itself to the dimensions required by its content.-->
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        android:id="@+id/textView" />-->
+
+    <Button
+        android:id="@+id/btn_help"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btn_start"
+        android:layout_marginRight="101dp"
+        android:layout_marginTop="27dp"
+        android:background="@drawable/pbutton"
+        android:text="Quit"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"/>
+>>>>>>> d772e4bd410b92e27e0e3daa82a66c6809e45cad
+    <Button
+        android:id="@+id/btn_start"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_alignLeft="@+id/btn_help"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="95dp"
+        android:background="@drawable/pbutton"
+        android:text="Initialise"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"/>
+
+    <Button
+        android:id="@+id/btn_options"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:background="@drawable/pbutton"
+        android:text="Options"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"
+        android:layout_below="@+id/btn_start"
+        android:layout_alignStart="@+id/btn_start"
+        android:layout_marginTop="35dp" />
+
+    <Button
+        android:id="@+id/btn_help"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginRight="101dp"
+        android:layout_marginTop="41dp"
+        android:background="@drawable/pbutton"
+        android:text="Quit"
+        android:textSize="18dp"
+        android:textColor="#bdfcf2"
+        android:layout_below="@+id/btn_options"
+        android:layout_centerHorizontal="true" />
+</RelativeLayout>
