@@ -14,6 +14,7 @@ public class Mainmenu extends Activity implements OnClickListener {
 
     // Buttons for start and help, which is also a view, which is also an object, should contain a reference to xml one since UI xml objects are views
     private Button btn_start;
+    private Button btn_options;
     private Button btn_help;
 
     @Override
@@ -29,6 +30,8 @@ public class Mainmenu extends Activity implements OnClickListener {
 
         btn_start = (Button)findViewById(R.id.btn_start); // btn from xml is found and given to btn_start
         btn_start.setOnClickListener(this); // make button wait for click and when i press it, call OnClick
+        btn_options = (Button)findViewById(R.id.btn_options);
+        btn_options.setOnClickListener(this);
         btn_help = (Button)findViewById(R.id.btn_help);
         btn_help.setOnClickListener(this);
     }
@@ -41,6 +44,10 @@ public class Mainmenu extends Activity implements OnClickListener {
         if (v == btn_start)
         {
             intent.setClass(this, LevelPage.class);
+        }
+        else if (v == btn_options)
+        {
+            intent.setClass(this, Options.class);
         }
         else if (v == btn_help)
         {

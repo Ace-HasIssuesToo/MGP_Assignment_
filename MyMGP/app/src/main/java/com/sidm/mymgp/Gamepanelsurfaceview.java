@@ -13,9 +13,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.hardware.SensorEventListener;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.nfc.Tag;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.style.EasyEditSpan;
@@ -162,6 +166,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private SoundManager soundManager;
     public Vibrator m_vibrator;
 
+    static boolean soundToggle;
+
+    SoundPool SoundPool;
+
+    AudioAttributes Attributes;
+
+    int soundID;
+
     //constructor for this GamePanelSurfaceView class
     public Gamepanelsurfaceview (Context context, Activity activity){
         // Context is the current state of the application/object
@@ -290,20 +302,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         stat_totalScore = 0; stat_currScore = 0;
         numRate = 3;
         numHealth = 100;
-//        int posx = 2;
-//        for (int i = 0; i < gridarray.length; ++i)
-//        {
-//            gridarray[i].bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.circle), Screenwidth / 10, Screenheight / 10, true);
-//            if (posx != 0) {
-//                gridarray[i].x = Screenwidth / (posx);
-//            }
-//            else {
-//                gridarray[i].x = Screenwidth;
-//            }
-//            posx += 5;
-//            //Log.v("sam", "pos: " + posx + " index: " + i);
-//            gridarray[i].y = Screenheight * 0.5f;
-//        }
         // filter param is to go through bilinear interpolation for getting a high quality image after scaling up
         PauseB1 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
         PauseB2 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
@@ -312,9 +310,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Make the GamePanel focusable so it can handle events
         setFocusable(true);
         activityTracker = activity;
-        //Intent intent = new Intent();
-        //intent.setClass(getContext(), Mainmenu.class);
-       // activityTracker.startActivity(intent);
         // Adding the callback (this) to the surface holder to intercept events on physical surface/screen
         getHolder().addCallback(this);
         sensor = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
@@ -364,6 +359,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         numRate = 0;
         numRate = SharedPrefScore.getInt("UserScore", 0);
         b_EndLevel = false;
+
+        //SoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
+        //Attributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
+        //SoundPool = new SoundPool.Builder().setAudioAttributes(Attributes).setMaxStreams(2).build();
+
     }
 
     //must implement inherited abstract methods
@@ -374,7 +374,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             myThread.startRun(true);
             myThread.start();
         }
-        soundManager.PlayBGM();
+        if(soundToggle == true)
+            {soundManager.PlayBGM();}
+        else
+        {}
     }
 
     public void surfaceDestroyed(SurfaceHolder holder){
@@ -885,6 +888,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return ally;
     }
 
+    static public void setSoundToggle(boolean setSound)
+    {
+        setSound = soundToggle;
+    }
+    static public boolean getSoundToggle()
+    {
+        return soundToggle;
+    }
+
     public void startVibrate()
     {
         long pattern[] = {0, 50, 0};
@@ -1039,15 +1051,5 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 currIndex = -1;
                 break;
         }          return true;
-        // 5) In event of touch on screen, the spaceship will relocate to the point of touch
-//        short X = (short)event.getX(); // temp value of the screen touch
-//        short Y = (short)event.getY();
-//
-//        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//            mX = (short)(X - ship[shipIndex].getWidth() * 0.5);
-//            mY = (short)(Y - ship[shipIndex].getHeight() * 0.5);
-//        }
-//
-//        return super.onTouchEvent(event);
     }
 }
