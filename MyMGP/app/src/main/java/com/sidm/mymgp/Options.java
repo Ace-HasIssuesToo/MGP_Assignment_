@@ -55,20 +55,19 @@ public class Options extends Activity implements OnClickListener {
                                 Gamepanelsurfaceview.setSoundToggle(false);
                             }
                         }
+                        else if(selectedButton.getId() == R.id.soundeffecton)
+                        {
+                            Toast.makeText(getApplicationContext(), "Sound Effects on", Toast.LENGTH_SHORT).show();
+
+                            if(Gamepanelsurfaceview.getSoundToggle() == false)
+                            {
+                                Gamepanelsurfaceview.setSoundToggle(true);
+                            }
+                        }
                     }
                 }
         );
     }
-
-    public void onSoundEffectsOnButtonClick(View view)
-    {
-        Toast.makeText(getApplicationContext(), "Sound Effects On", Toast.LENGTH_SHORT).show();
-        if(Gamepanelsurfaceview.getSoundToggle() == false)
-        {
-            Gamepanelsurfaceview.setSoundToggle(true);
-        }
-    }
-
     // *Must* be implemented since this is an interface function
     public void onClick(View v)
     {

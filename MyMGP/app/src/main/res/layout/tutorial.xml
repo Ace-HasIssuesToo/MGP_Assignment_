@@ -68,4 +68,14 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="23dp" />
 
+    <TextView
+        android:text="Next page: Swipe from top left to bottom right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18dp"
+        android:textColor="#ffffff"
+        android:id="@+id/SwipeText"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>

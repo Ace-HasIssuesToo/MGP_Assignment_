@@ -200,8 +200,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //lvl_manager = LevelManager.m_levellist.elementAt(CURRENT_LEVEL - 1);
         lvl_manager = LevelManager.m_levellist.elementAt(CURRENT_LEVEL - 1);
         // getResources() returns you the app res folder, we then decode the image using its R.id
-        bg = BitmapFactory.decodeResource(getResources(), R.drawable.matrix);
-        ball = BitmapFactory.decodeResource(getResources(), R.drawable.dragonballpixel2);
+        bg = BitmapFactory.decodeResource(getResources(), R.drawable.gamebackground);
+        ball = Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.malwareicon)), Screenwidth / 10, Screenwidth / 10, true);
         scalebg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);// For bigger/smaller version of bg
         circlePressed = new Spriteanimation(BitmapFactory.decodeResource(getResources(),R.drawable.techcirclespritesheet), 288, 96, 3, 3);
         // for grid circle and line
@@ -308,17 +308,24 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         wall_list = new Objects[5];
         for (int i = 0; i < wall_list.length; ++i)
         {
-            wall_list[i] = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.hightechwall)), Screenwidth / 10, Screenheight / 10, true), 5, 5);
-            wall_list[i].position.x = Screenwidth * 0.2f;
-            wall_list[i].position.y = Screenheight * 0.5f - (Screenheight / 10) * i;
+            wall_list[i] = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.wall)), Screenwidth / 10, Screenheight / 10, true), 5, 5);
+            if (CURRENT_LEVEL == 1) {
+                wall_list[i].position.x = Screenwidth * 0.2f;
+                wall_list[i].position.y = Screenheight * 0.5f - (Screenheight / 10) * i;
+            }
+            else if (CURRENT_LEVEL == 2)
+            {
+                wall_list[i].position.x = Screenwidth * 0.2f - (Screenwidth / 10) * i;
+                wall_list[i].position.y = Screenheight * 0.4f;
+            }
         }
         if (CURRENT_LEVEL == 1) {
             kill_line = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.laser)), (int) (Screenwidth * 0.6f - Screenwidth * 0.2f), Screenheight / 2, true), 5, 5);
             kill_line.position.Set(Screenwidth * 0.2f + (Screenwidth / 10 * 0.5f), lvl_manager.m_des.elementAt(1).y + 50.f);
         }
             else if (CURRENT_LEVEL == 2) {
-            kill_line = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.laservertical)), Screenheight / 2, (int) (Screenwidth * 0.6f - Screenwidth * 0.2f), true), 5, 5);
-            kill_line.position.Set(lvl_manager.m_des.elementAt(1).x - 600.f, lvl_manager.m_des.elementAt(1).y); // Position is where the wall are plus the wall's sprite width, so the laser starts from the middle of the block
+            kill_line = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.laservertical)), Screenheight / 2, (int) (Screenwidth * 0.8f), true), 5, 5);
+            kill_line.position.Set(lvl_manager.m_des.elementAt(1).x - 600.f, lvl_manager.m_des.elementAt(1).y - 250); // Position is where the wall are plus the wall's sprite width, so the laser starts from the middle of the block
         }
         //Load font
         myfont = Typeface.createFromAsset(getContext().getAssets(),"fonts/finalf.ttf");
@@ -332,8 +339,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         numRate = 3;
         numHealth = 100;
         // filter param is to go through bilinear interpolation for getting a high quality image after scaling up
-        PauseB1 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
-        PauseB2 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
+        PauseB1 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause_512)), (int)(Screenwidth)/10, (int)(Screenwidth)/10, true), Screenwidth - 200, 30);
+        PauseB2 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause_512)), (int)(Screenwidth)/10, (int)(Screenwidth)/10, true), Screenwidth - 200, 30);
         myThread = new Gamethread(getHolder(), this);
         myfont = Typeface.createFromAsset(getContext().getAssets(), "fonts/arial.ttf");
         // Make the GamePanel focusable so it can handle events
@@ -388,7 +395,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         numRate = 0;
         numRate = SharedPrefScore.getInt("UserScore", 0);
         b_EndLevel = false;
-
+        soundToggle = true;
         //SoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
         //Attributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
         //SoundPool = new SoundPool.Builder().setAudioAttributes(Attributes).setMaxStreams(2).build();
@@ -403,10 +410,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             myThread.startRun(true);
             myThread.start();
         }
-        if(soundToggle == true)
-            {soundManager.PlayBGM();}
-        else
-        {}
+
     }
 
     public void surfaceDestroyed(SurfaceHolder holder){
@@ -574,7 +578,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 gridarray[i].spriteanimation.setY((int)gridarray[i].y);
             }
         }
-        RenderTextOnScreen(canvas, "T-SCORE: " + stat_totalScore, 110, (int)(Screenheight * 0.9f), 80, 0, 0, 255, 255);
+        RenderTextOnScreen(canvas, "T-SCORE: " + stat_totalScore, 110, (int)(Screenheight * 0.9f - 200), 80, 0, 0, 255, 255);
         //RenderHealthbar(canvas);
         RenderPause(canvas);
         RenderAlly(canvas);
@@ -587,6 +591,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     //Update method to update the game play
     public void update(float dt, float fps){ // edit
         FPS = fps;
+        if(soundToggle)
+        {soundManager.PlayBGM();}
+        else
+        {}
         switch (GameState) {
             case 0: {
                 // 3) Update the background to allow panning effect
