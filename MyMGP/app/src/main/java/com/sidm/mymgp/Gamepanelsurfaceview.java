@@ -201,7 +201,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         lvl_manager = LevelManager.m_levellist.elementAt(CURRENT_LEVEL - 1);
         // getResources() returns you the app res folder, we then decode the image using its R.id
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.matrix);
-        ball = BitmapFactory.decodeResource(getResources(), R.drawable.dragonballpixel2);
+        ball = BitmapFactory.decodeResource(getResources(), R.drawable.pokeball);
         scalebg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);// For bigger/smaller version of bg
         circlePressed = new Spriteanimation(BitmapFactory.decodeResource(getResources(),R.drawable.techcirclespritesheet), 288, 96, 3, 3);
         // for grid circle and line
@@ -308,7 +308,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         wall_list = new Objects[5];
         for (int i = 0; i < wall_list.length; ++i)
         {
-            wall_list[i] = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.hightechwall)), Screenwidth / 10, Screenheight / 10, true), 5, 5);
+            wall_list[i] = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.wall)), Screenwidth / 10, Screenheight / 10, true), 5, 5);
             wall_list[i].position.x = Screenwidth * 0.2f;
             wall_list[i].position.y = Screenheight * 0.5f - (Screenheight / 10) * i;
         }
@@ -332,8 +332,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         numRate = 3;
         numHealth = 100;
         // filter param is to go through bilinear interpolation for getting a high quality image after scaling up
-        PauseB1 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
-        PauseB2 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)), (int)(Screenwidth)/15, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
+        PauseB1 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause_512)), (int)(Screenwidth)/10, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
+        PauseB2 = new Objects(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause_512)), (int)(Screenwidth)/10, (int)(Screenheight)/10, true), Screenwidth - 200, 30);
         myThread = new Gamethread(getHolder(), this);
         myfont = Typeface.createFromAsset(getContext().getAssets(), "fonts/arial.ttf");
         // Make the GamePanel focusable so it can handle events
