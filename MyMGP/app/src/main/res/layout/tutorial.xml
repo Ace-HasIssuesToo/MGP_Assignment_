@@ -17,39 +17,55 @@
         android:textSize="18dp"
         android:textColor="#ffffff">
     </TextView>
-<!--
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="They turn into allies if you defeat them!"
-        android:id="@+id/tutorial_allytext" />
--->
+
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/techcirclespritesheet"
-        android:layout_below="@+id/imageView"
-        android:layout_marginTop="116dp"
-        android:id="@+id/imageView2" />
+        android:src="@drawable/techcirclespritesheet"
+        android:id="@+id/imageView2"
+        android:layout_alignTop="@+id/tutorial_instructiontext"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This is an ally!"
+        android:id="@+id/tutorial_allyintro"
+        android:textSize="18dp"
+        android:textColor="#ffffff"
+        android:layout_alignBottom="@+id/imageView"
+        android:layout_alignParentStart="true">
+    </TextView>
+
+    <ImageView
+        android:src="@drawable/patternright"
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="346dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Draw patterns that match with the enemies, that is how you defeat them!"
         android:id="@+id/tutorial_instructiontext"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true"
         android:textSize="18dp"
-        android:textColor="#ffffff"></TextView>
+        android:textColor="#ffffff"
+        android:layout_marginTop="145dp"
+        android:layout_below="@+id/tutorial_allyintro"
+        android:layout_alignParentStart="true"></TextView>
 
     <ImageView
-        app:srcCompat="@drawable/patternright"
-        android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="41dp"
-        android:layout_alignBottom="@+id/tutorial_instructiontext"
-        android:layout_alignParentEnd="true" />
+        android:src="@drawable/green1"
+        android:id="@+id/imageView3"
+        android:cropToPadding="false"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_below="@+id/tutorial_allyintro"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="23dp" />
 
 </RelativeLayout>

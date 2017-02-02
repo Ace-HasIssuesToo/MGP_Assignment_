@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -89,6 +90,8 @@ public class Scorepage extends Activity implements View.OnClickListener {
         btn_back.setOnClickListener(this); // btn is linked to this button id and when i press it, go to this
         TextView scoreText;
         scoreText = (TextView) findViewById(R.id.scoreText);
+        scoreText.setTextColor(Color.WHITE);
+        scoreText.setTextSize(18);
         String Playername;
         SharedPrefName = getSharedPreferences("PlayerUSERID", Context.MODE_PRIVATE);
         Playername = SharedPrefName.getString("PlayerUSERID", "DEFAULT");

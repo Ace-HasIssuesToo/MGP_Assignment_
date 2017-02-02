@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation = "vertical"
+    android:background="@drawable/mainmenupage"
     tools:context="com.sidm.mymgp.Scorepage">
 
     <Button
@@ -39,7 +40,9 @@
         android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/btn_back"
         android:layout_marginEnd="12dp"
-        android:layout_marginTop="122dp" />
+        android:layout_marginTop="122dp"
+        android:textSize="18dp"
+        android:textColor="#ffffff" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -48,7 +51,9 @@
         android:id="@+id/textView"
         android:layout_marginTop="32dp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:textSize="18dp"
+        android:textColor="#ffffff" />
 
     <!--<com.facebook.login.widget.LoginButton
         android:id="@+id/fb_login_button"
